@@ -7,4 +7,17 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Domain\RepositoryContracts\" />
+    <Folder Include="DTO\" />
+    <Folder Include="Enums\" />
+    <Folder Include="Helpers\" />
+    <Folder Include="ServiceContracts\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.4" />
+  </ItemGroup>
+
 </Project>
