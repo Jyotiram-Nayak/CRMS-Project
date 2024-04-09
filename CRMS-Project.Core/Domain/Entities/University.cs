@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CRMS_Project.Core.Domain.Entities
+namespace CRMS_Project.Core.Domain.Identity
 {
-    internal class University
+    public class University
     {
         [Key]
         public Guid UniversityID { get; set; }

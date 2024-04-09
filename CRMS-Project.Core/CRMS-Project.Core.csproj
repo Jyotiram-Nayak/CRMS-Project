@@ -8,16 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Domain\RepositoryContracts\" />
-    <Folder Include="DTO\" />
-    <Folder Include="Enums\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="ServiceContracts\" />
-    <Folder Include="Services\" />
+    <Compile Remove="Domain\Identity\ApplicationRole.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.4" />
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.3" />
   </ItemGroup>
 
 </Project>

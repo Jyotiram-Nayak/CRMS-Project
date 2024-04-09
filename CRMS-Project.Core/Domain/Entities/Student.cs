@@ -5,10 +5,11 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using CRMS_Project.Core.Enums;
 
-namespace CRMS_Project.Core.Domain.Entities
+namespace CRMS_Project.Core.Domain.Identity
 {
-    internal class Student
+    public class Student
     {
         [Key]
         public Guid StudentId { get; set; }
@@ -17,38 +18,27 @@ namespace CRMS_Project.Core.Domain.Entities
         public Guid UserId { get; set; }
 
         [Required(ErrorMessage = "Name is required")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email address")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Date of birth is required")]
         public DateTime Dob { get; set; }
 
         [Required(ErrorMessage = "Gender is required")]
-        public Gender Gender { get; set; }
+        public GenderOptions Gender { get; set; }
 
         [Required(ErrorMessage = "Marital status is required")]
-        public MaritalStatus MaritalStatus { get; set; }
-
-        [Required(ErrorMessage = "Joining date is required")]
+        public MaritalOptions MaritalStatus { get; set; }
+        [Required]
         public DateTime JoiningDate { get; set; }
-
-        [Required(ErrorMessage = "Graduation date is required")]
+        [Required]
         public DateTime GraduationDate { get; set; }
-
-        [Required(ErrorMessage = "CreatedOn date is required")]
+        [Required]
         public DateTime CreatedOn { get; set; }
-
         public DateTime? UpdatedOn { get; set; }
     }
-    public enum Gender
-    {
-        Male, Female, Other
-    }
-    public enum MaritalStatus
-    {
-        Married, Unmarried
-    }
+    
 }
