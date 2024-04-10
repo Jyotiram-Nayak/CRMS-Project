@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace CRMS_Project.Core.Services
 {
-    public class EmailServices : IEmailServices
+    public class EmailService : IEmailService
     {
         private const string templatePath = @"EmailTemplate/{0}.html";
         private readonly IOptions<SMTPConfiguration> _smtpconfig;
@@ -20,7 +20,7 @@ namespace CRMS_Project.Core.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IWebHostEnvironment _environment;
 
-        public EmailServices(IOptions<SMTPConfiguration> smtpconfig,
+        public EmailService(IOptions<SMTPConfiguration> smtpconfig,
             IConfiguration configuration,
             UserManager<ApplicationUser> userManager,
             IWebHostEnvironment environment)

@@ -12,5 +12,7 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
     public interface IAuthRepository
     {
         Task<IdentityResult> RegisterUserAsync(RegisterRequest registerRequest);
+        Task<SignInResult> LoginAsync(LoginRequest loginRequest);
+        Task<IdentityResult> ConfirmEmail(string uid, string token);
     }
 }

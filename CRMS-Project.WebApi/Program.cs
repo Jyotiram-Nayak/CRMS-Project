@@ -5,9 +5,13 @@ using CRMS_Project.Core.ServiceContracts;
 using CRMS_Project.Core.Services;
 using CRMS_Project.Infrastructure.DbContext;
 using CRMS_Project.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -21,10 +25,34 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(option => option.Sig
     .AddDefaultTokenProviders();
 
 builder.Services.AddTransient<IAuthRepository, AuthRepository>();
-builder.Services.AddTransient<IEmailServices, EmailServices>();
+builder.Services.AddTransient<IEmailService, EmailService>();
+builder.Services.AddTransient<IJwtService, JwtService>();
 
 //configure services with SMTPConfiguration
 builder.Services.Configure<SMTPConfiguration>(builder.Configuration.GetSection("EmailSettings"));
+
+
+builder.Services.AddAuthentication(option =>
+{
+    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    option.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(option =>
+{
+    option.SaveToken = true;
+    option.RequireHttpsMetadata = true;
+    option.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidAudience = builder.Configuration["JWT:ValidAudience"],
+        ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
+        NameClaimType = ClaimTypes.NameIdentifier
+    };
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

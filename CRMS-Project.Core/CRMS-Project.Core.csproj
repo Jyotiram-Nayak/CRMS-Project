@@ -8,6 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Domain\Entities\Company.cs" />
+    <Compile Remove="Domain\Entities\University.cs" />
+    <Compile Remove="Domain\Entities\UniversityCompany.cs" />
     <Compile Remove="Domain\Identity\ApplicationRole.cs" />
   </ItemGroup>
 

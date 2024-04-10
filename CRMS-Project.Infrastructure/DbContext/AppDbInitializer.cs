@@ -20,16 +20,24 @@ namespace CRMS_Project.Infrastructure.DbContext
                     roleResult = await roleManager.CreateAsync(new IdentityRole(role));
                 }
             }
+            var firstName = "";
+            var lastName = "";
             var email = "admin@gmail.com";
             var password = "Admin@123";
             if (userManager.FindByEmailAsync(email).Result == null)
             {
                 ApplicationUser user = new ApplicationUser
                 {
-                    IsApproved=true,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    IsApproved = true,
+                    Address = "...",
+                    Website = "...",
                     Email = email,
+                    EmailConfirmed = true,
                     UserName = email,
-                    EmailConfirmed = true
+                    CreateOn = DateTime.Now,
+                    Role="admin"
                 };
                 IdentityResult result = await userManager.CreateAsync(user, password);
                 if (result.Succeeded)

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CRMS_Project.Core.ServiceContracts
 {
-    public interface IEmailServices
+    public interface IEmailService
     {
         Task SendEmailConfirmationAsync(ApplicationUser user);
     }
