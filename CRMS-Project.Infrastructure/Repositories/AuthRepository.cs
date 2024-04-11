@@ -11,15 +11,15 @@ namespace CRMS_Project.Infrastructure.Repositories
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IEmailService _emailServices;
+        private readonly IEmailService _emailService;
 
         public AuthRepository(UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            IEmailService emailServices)
+            IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _emailServices = emailServices;
+            _emailService = emailService;
         }
         public async Task<IdentityResult> RegisterUserAsync(RegisterRequest user)
         {
@@ -56,7 +56,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                     await _userManager.AddToRoleAsync(newUser, UserRoles.Student);
                     break;
             }
-            await _emailServices.SendEmailConfirmationAsync(newUser);
+            await _emailService.SendEmailConfirmationAsync(newUser);
             return result;
         }
 

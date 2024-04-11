@@ -3,12 +3,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CRMS_Project.Core.Domain.Identity
 {
-    public class ApplicationUser : IdentityUser   
+    public class ApplicationUser : IdentityUser  
     {
         [Required]
         public string FirstName { get; set; }
         [Required]
         public string LastName { get; set; }
+        public Guid? UniversityId { get; set; }
         [Required]
         public bool IsApproved { get; set; }
         public string? Image { get; set; }

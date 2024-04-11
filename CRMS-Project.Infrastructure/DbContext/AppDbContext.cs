@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using CRMS_Project.Core.Domain.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace CRMS_Project.Infrastructure.DbContext
 {
-    public class AppDbContext:IdentityDbContext<ApplicationUser>
+    public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -12,7 +13,7 @@ namespace CRMS_Project.Infrastructure.DbContext
         }
         //public DbSet<University> Universities { get; set; }
         //public DbSet<Company> Companies { get; set; }
-        //public DbSet<Student> Students { get; set; }
+        public DbSet<Student> Students { get; set; }
         //public DbSet<Job> Jobs { get; set; }
         //public DbSet<JobApplication> JobApplications { get; set; }
         //public DbSet<Message> Messages { get; set; }
@@ -21,6 +22,12 @@ namespace CRMS_Project.Infrastructure.DbContext
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Student>()
+            .HasOne(s => s.ApplicationUser)
+            .WithOne()
+            .HasForeignKey<Student>(s => s.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
             //modelBuilder.Entity<UniversityCompany>()
             //    .HasKey(uc => new { uc.UniversityID, uc.CompanyID });
 

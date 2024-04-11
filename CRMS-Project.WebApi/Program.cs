@@ -27,6 +27,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(option => option.Sig
 builder.Services.AddTransient<IAuthRepository, AuthRepository>();
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddTransient<IJwtService, JwtService>();
+builder.Services.AddTransient<IStudentRepository, StudentRepository>();
+builder.Services.AddTransient<IUserService, UserService>();
 
 //configure services with SMTPConfiguration
 builder.Services.Configure<SMTPConfiguration>(builder.Configuration.GetSection("EmailSettings"));

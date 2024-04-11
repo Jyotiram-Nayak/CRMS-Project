@@ -1,29 +1,24 @@
-﻿using System;
+﻿using CRMS_Project.Core.Domain.Identity;
+using CRMS_Project.Core.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using CRMS_Project.Core.Enums;
 
-namespace CRMS_Project.Core.Domain.Identity
+namespace CRMS_Project.Core.DTO.Response
 {
-    public class Student
+    public class StudentResponse : AuthenticationResponse
     {
-        [Key]
         public Guid StudentId { get; set; }
-        [Required]
         public string UserId { get; set; }
-        [Required]
+        public Guid? UniversityId { get; set; }
         public string RollNo { get; set; }
         public DateTime? Dob { get; set; }
         public GenderOptions? Gender { get; set; }
         public MaritalOptions? MaritalStatus { get; set; }
-        [Required]
         public DateTime JoiningDate { get; set; }
         public DateTime? GraduationDate { get; set; }
-        public ApplicationUser ApplicationUser { get; set; }
     }
-    
 }
