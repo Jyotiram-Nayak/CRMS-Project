@@ -26,7 +26,8 @@ namespace CRMS_Project.Core.DTO.Request
 
         [Required(ErrorMessage = "Roll number is required")]
         public string RollNo { get; set; }
-
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime? Dob { get; set; }
         public GenderOptions? Gender { get; set; }
         public MaritalOptions? MaritalStatus { get; set; }
@@ -35,8 +36,11 @@ namespace CRMS_Project.Core.DTO.Request
         public string Address { get; set; }
 
         [Required(ErrorMessage = "Joining date is required")]
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime JoiningDate { get; set; }
-
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime? GraduationDate { get; set; }
     }
 }

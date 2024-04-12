@@ -65,7 +65,7 @@ namespace CRMS_Project.Infrastructure.Repositories
             var query = (from user in _userManager.Users
                          join student in _context.Students
                          on user.Id equals student.UserId
-                         where user.Role == "student" 
+                         where user.Role == "student"
                          select new StudentResponse
                          {
                              UserId = user.Id,
@@ -99,7 +99,7 @@ namespace CRMS_Project.Infrastructure.Repositories
             ApplicationUser newUser = new ApplicationUser
             {
                 //Id = Guid.NewGuid(),
-                UniversityId = new Guid(_userService.GetUserId()),
+                UniversityId = _userService.GetUserId(),
                 FirstName = studentRequest.FirstName,
                 LastName = studentRequest.LastName,
                 IsApproved = true,
@@ -119,7 +119,7 @@ namespace CRMS_Project.Infrastructure.Repositories
 
             var student = new Student
             {
-                StudentId = Guid.NewGuid(),
+                StudentId = Guid.NewGuid().ToString(),
                 UserId = newUser.Id,
                 RollNo = studentRequest.RollNo,
                 Dob = studentRequest.Dob,
@@ -131,6 +131,17 @@ namespace CRMS_Project.Infrastructure.Repositories
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
             return result;
+        }
+        public async Task<IdentityResult> DeleteStudent(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user != null && user.Role == UserRoles.Student.ToLower())
+            {
+                var result = await _userManager.DeleteAsync(user);
+                await _context.SaveChangesAsync();
+                return result;
+            }
+            return IdentityResult.Failed(new IdentityError { Description = $"Student with ID '{id}' not found." });
         }
     }
 }

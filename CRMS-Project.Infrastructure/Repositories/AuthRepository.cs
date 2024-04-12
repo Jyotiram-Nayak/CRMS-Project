@@ -2,7 +2,9 @@
 using CRMS_Project.Core.Domain.RepositoryContracts;
 using CRMS_Project.Core.DTO;
 using CRMS_Project.Core.DTO.Request;
+using CRMS_Project.Core.DTO.Response;
 using CRMS_Project.Core.ServiceContracts;
+using CRMS_Project.Core.Services;
 using Microsoft.AspNetCore.Identity;
 
 namespace CRMS_Project.Infrastructure.Repositories
@@ -12,14 +14,17 @@ namespace CRMS_Project.Infrastructure.Repositories
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailService _emailService;
+        private readonly IUserService _userService;
 
         public AuthRepository(UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            IEmailService emailService)
+            IEmailService emailService,
+            IUserService userService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailService = emailService;
+            _userService = userService;
         }
         public async Task<IdentityResult> RegisterUserAsync(RegisterRequest user)
         {
@@ -70,5 +75,28 @@ namespace CRMS_Project.Infrastructure.Repositories
             var result = await _userManager.ConfirmEmailAsync(await _userManager.FindByIdAsync(uid), token);
             return result;
         }
+        public async Task<IdentityResult> ChangePasswordAsync(ChangePasswordRequest changePassword)
+        {
+            var uid = _userService.GetUserId();
+            var user = await _userManager.FindByIdAsync(uid);
+            if (user == null)
+            {
+                return null;
+            }
+            return await _userManager.ChangePasswordAsync(user, changePassword.CurrentPassword, changePassword.NewPassword);
+        }
+        public async Task<AuthenticationResponse> GetUserDetails(string? userId)
+        {
+            if (userId == null)
+            {
+                userId = _userService.GetUserId();
+            }
+            var user = await _userManager.FindByIdAsync(userId);
+            return new AuthenticationResponse();
+        }
+        //public async Task<AuthenticationResponse> GetAllUser(UserRoles userRoles)
+        //{
+            
+        //}
     }
 }

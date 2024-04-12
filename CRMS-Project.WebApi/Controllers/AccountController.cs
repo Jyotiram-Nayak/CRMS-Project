@@ -61,5 +61,16 @@ namespace CRMS_Project.WebApi.Controllers
             }
             return Ok("Thank you for varification");
         }
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequest changePassword)
+        {
+            var result = await _authRepository.ChangePasswordAsync(changePassword);
+            if (!result.Succeeded)
+            {
+                return Unauthorized();
+            }
+            return Ok(result);
+        }
     }
 }

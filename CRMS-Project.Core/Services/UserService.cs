@@ -16,5 +16,9 @@ namespace CRMS_Project.Core.Services
         {
             return _contextAccessor.HttpContext.User?.FindFirstValue(ClaimTypes.NameIdentifier);
         }
+        public string GetUserRole()
+        {
+            return _contextAccessor.HttpContext.User?.FindFirstValue(ClaimTypes.Role);
+        }
     }
 }

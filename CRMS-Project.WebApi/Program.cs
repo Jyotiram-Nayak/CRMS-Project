@@ -29,10 +29,13 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddTransient<IJwtService, JwtService>();
 builder.Services.AddTransient<IStudentRepository, StudentRepository>();
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IApplicationRepository, ApplicationRepository>();
 
 //configure services with SMTPConfiguration
 builder.Services.Configure<SMTPConfiguration>(builder.Configuration.GetSection("EmailSettings"));
 
+//use automapper middleware to map between entity and DTO
+builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddAuthentication(option =>
 {

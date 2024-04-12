@@ -1,5 +1,6 @@
 ﻿using CRMS_Project.Core.Domain.Identity;
 using CRMS_Project.Core.DTO.Request;
+using CRMS_Project.Core.DTO.Response;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -14,5 +15,7 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<IdentityResult> RegisterUserAsync(RegisterRequest registerRequest);
         Task<SignInResult> LoginAsync(LoginRequest loginRequest);
         Task<IdentityResult> ConfirmEmail(string uid, string token);
+        Task<IdentityResult> ChangePasswordAsync(ChangePasswordRequest changePassword);
+        Task<AuthenticationResponse> GetUserDetails(string? userId);
     }
 }

@@ -9,5 +9,6 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         //Task<List<StudentResponse>> GetAllStudentsAsync();
         Task<List<StudentResponse>> GetStudentAsync(string? userId);
         Task<IdentityResult> AddStudent(StudentRequest studentRequest);
+        Task<IdentityResult> DeleteStudent(string id);
     }
 }

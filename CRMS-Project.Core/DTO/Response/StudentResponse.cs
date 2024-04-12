@@ -11,9 +11,9 @@ namespace CRMS_Project.Core.DTO.Response
 {
     public class StudentResponse : AuthenticationResponse
     {
-        public Guid StudentId { get; set; }
+        public string StudentId { get; set; }
         public string UserId { get; set; }
-        public Guid? UniversityId { get; set; }
+        public string? UniversityId { get; set; }
         public string RollNo { get; set; }
         public DateTime? Dob { get; set; }
         public GenderOptions? Gender { get; set; }

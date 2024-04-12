@@ -22,6 +22,30 @@ namespace CRMS_Project.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("CRMS_Project.Core.Domain.Entities.PlacementApplication", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CompanyId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateSubmitted")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UniversityId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PlacementApplications");
+                });
+
             modelBuilder.Entity("CRMS_Project.Core.Domain.Identity.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -95,8 +119,8 @@ namespace CRMS_Project.Infrastructure.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("UniversityId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("UniversityId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdateOn")
                         .HasColumnType("datetime2");
@@ -123,9 +147,8 @@ namespace CRMS_Project.Infrastructure.Migrations
 
             modelBuilder.Entity("CRMS_Project.Core.Domain.Identity.Student", b =>
                 {
-                    b.Property<Guid>("StudentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("StudentId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("Dob")
                         .HasColumnType("datetime2");

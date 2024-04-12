@@ -3,5 +3,6 @@
     public interface IUserService
     {
         string GetUserId();
+        string GetUserRole();
     }
 }

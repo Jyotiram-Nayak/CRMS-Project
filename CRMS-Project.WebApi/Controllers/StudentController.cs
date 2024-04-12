@@ -11,6 +11,7 @@ namespace CRMS_Project.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = UserRoles.University)]
     public class StudentController : ControllerBase
     {
         private readonly IStudentRepository _studentRepository;
@@ -20,8 +21,7 @@ namespace CRMS_Project.WebApi.Controllers
             _studentRepository = studentRepository;
         }
         [HttpGet("get-student")]
-        [Authorize(Roles = UserRoles.University)]
-        public async Task<IActionResult> GetAllStudents(string? userId)
+        public async Task<IActionResult> GetAllStudents([FromQuery]string? userId)
         {
             var result = await _studentRepository.GetStudentAsync(userId);
             if (result == null)
@@ -33,7 +33,6 @@ namespace CRMS_Project.WebApi.Controllers
             return Ok(response);
         }
         [HttpPost("add-student")]
-        [Authorize(Roles =UserRoles.University)]
         public async Task<IActionResult> AddStudent(StudentRequest studentRequest)
         {
             var result = await _studentRepository.AddStudent(studentRequest);
@@ -45,5 +44,18 @@ namespace CRMS_Project.WebApi.Controllers
             response = new { success = true, message = "Register Student successfully...", data = result };
             return Ok(response);
         }
+        [HttpDelete("delete-student")]
+        public async Task<IActionResult> DeleteStudent([FromQuery]string userId)
+        {
+            var result = await _studentRepository.DeleteStudent(userId);
+            if (!result.Succeeded)
+            {
+                response = new { success = false, message = "Failed to Delete Student.", error = result };
+                return BadRequest(response);
+            };
+            response = new { success = true, message = "Student deleted successfully...", data = result };
+            return Ok(response);
+        }
+
     }
 }
