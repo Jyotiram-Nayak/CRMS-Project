@@ -12,11 +12,11 @@ namespace CRMS_Project.Core.Domain.Entities
     public class PlacementApplication
     {
         [Key]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
         [Required]
-        public string CompanyId { get; set; }
+        public Guid CompanyId { get; set; }
         [Required]
-        public string UniversityId { get; set; }
+        public Guid UniversityId { get; set; }
         [Required]
         public ApplicationStatus Status { get; set; } 
         [Required]

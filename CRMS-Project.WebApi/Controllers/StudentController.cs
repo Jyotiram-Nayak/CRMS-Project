@@ -15,22 +15,29 @@ namespace CRMS_Project.WebApi.Controllers
     public class StudentController : ControllerBase
     {
         private readonly IStudentRepository _studentRepository;
-        private object response;
         public StudentController(IStudentRepository studentRepository)
         {
             _studentRepository = studentRepository;
         }
-        [HttpGet("get-student")]
-        public async Task<IActionResult> GetAllStudents([FromQuery]string? userId)
+        [HttpGet("get-all-students")]
+        public async Task<IActionResult> GetAllStudents()
         {
-            var result = await _studentRepository.GetStudentAsync(userId);
+            var result = await _studentRepository.GetAllStudentsAsync();
             if (result == null)
             {
-                response = new { success = false, message = "Failed to Fetchd Students.", data = result };
-                return BadRequest(response);
+                return BadRequest(new { success = false, message = "Failed to Fetchd Students.", data = result });
             };
-            response = new { success = true, message = "Students fetched successfully...", data = result };
-            return Ok(response);
+            return Ok(new { success = true, message = "Students fetched successfully...", data = result });
+        }
+        [HttpGet("get-student-details/{userId}")]
+        public async Task<IActionResult> GetAllStudents([FromRoute]Guid userId)
+        {
+            var result = await _studentRepository.GetStudentByIdAsync(userId);
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "Failed to fetchd Student details.", data = result });
+            };
+            return Ok(new { success = true, message = "Student details fetched successfully...", data = result });
         }
         [HttpPost("add-student")]
         public async Task<IActionResult> AddStudent(StudentRequest studentRequest)
@@ -38,23 +45,19 @@ namespace CRMS_Project.WebApi.Controllers
             var result = await _studentRepository.AddStudent(studentRequest);
             if (!result.Succeeded)
             {
-                response = new { success = false, message = "Failed to Add Student.", data = result };
-                return BadRequest(response);
+                return BadRequest(new { success = false, message = "Failed to Add Student.", data = result });
             };
-            response = new { success = true, message = "Register Student successfully...", data = result };
-            return Ok(response);
+            return Ok(new { success = true, message = "Register Student successfully...", data = result });
         }
         [HttpDelete("delete-student")]
-        public async Task<IActionResult> DeleteStudent([FromQuery]string userId)
+        public async Task<IActionResult> DeleteStudent([FromQuery] Guid userId)
         {
             var result = await _studentRepository.DeleteStudent(userId);
             if (!result.Succeeded)
             {
-                response = new { success = false, message = "Failed to Delete Student.", error = result };
-                return BadRequest(response);
+                return BadRequest(new { success = false, message = "Failed to Delete Student.", error = result });
             };
-            response = new { success = true, message = "Student deleted successfully...", data = result };
-            return Ok(response);
+            return Ok(new { success = true, message = "Student deleted successfully...", data = result });
         }
 
     }

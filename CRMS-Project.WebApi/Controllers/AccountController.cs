@@ -14,25 +14,32 @@ namespace CRMS_Project.WebApi.Controllers
     {
         private readonly IAuthRepository _authRepository;
         private readonly IJwtService _jwtService;
-        private object response;
         public AccountController(IAuthRepository authRepository,
             IJwtService jwtService)
         {
             _authRepository = authRepository;
             _jwtService = jwtService;
         }
-
+        [HttpGet("get-user-details/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetUserById(Guid? userId)
+        {
+            var result = await _authRepository.GetUserByIdAsunc(userId);
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "User not found." });
+            }
+            return Ok(new { success = true, message = "User details fetched successfully.", data = result });
+        }
         [HttpPost("register-user")]
-        public async Task<IActionResult> Register([FromBody]RegisterRequest registerRequest)
+        public async Task<IActionResult> Register([FromForm]RegisterRequest registerRequest)
         {
             var result =await _authRepository.RegisterUserAsync(registerRequest);
             if (!result.Succeeded)
             {
-                response = new { success = false, message = "Failed to Register.", data = result };
-                return BadRequest(response);
+                return BadRequest(new { success = false, message = "Failed to register user.", errors = result.Errors });
             };
-            response = new { success = true, message = "Register User successfully...", data = result };
-            return Ok(response);
+            return Ok(new { success = true, message = "Register User successfully...", data = result });
         }
         [HttpPost("login-user")]
         public async Task<IActionResult> Login([FromBody]LoginRequest loginRequest)
@@ -40,37 +47,35 @@ namespace CRMS_Project.WebApi.Controllers
             var result = await _authRepository.LoginAsync(loginRequest);
             if (!result.Succeeded)
             {
-                return Unauthorized(new { success = false, message = "SignIn failed." });
+                return Unauthorized(new { success = false, message = "Sign in failed. Invalid email or password." });
             }
             var token = await _jwtService.GenerateJWTTokenAsync(loginRequest.Email);
-            response = new { success = true, message = "SignIn successfully.", data = new {token } };
-            return Ok(response);
+            return Ok(new { success = true, message = "Sign in successful.", data = new { token } });
         }
-        [HttpGet("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail([FromQuery] string uid, [FromQuery] string token)
+        [HttpPut("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromQuery] Guid uid, [FromQuery] string token)
         {
-            if (string.IsNullOrEmpty(uid) || string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(uid.ToString()) || string.IsNullOrEmpty(token))
             {
                 return BadRequest();
             }
-            //token = token.Replace(" ", "+");
             var result = await _authRepository.ConfirmEmail(uid, token);
             if (!result.Succeeded)
             {
-                return Unauthorized();
+                return BadRequest(new { success = false, message = "Failed to confirm Email." ,errors = result.Errors });
             }
-            return Ok("Thank you for varification");
+            return Ok(new { success = true, message = "Email confirmed successfully.", data = result });
         }
-        [HttpPost("change-password")]
+        [HttpPut("change-password")]
         [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequest changePassword)
         {
             var result = await _authRepository.ChangePasswordAsync(changePassword);
             if (!result.Succeeded)
             {
-                return Unauthorized();
+                return BadRequest(new { success = false, message = "Failed to change password." , errors = result.Errors });
             }
-            return Ok(result);
+            return Ok(new { success = true, message = "Password changed successfully.", data = result });
         }
     }
 }

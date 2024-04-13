@@ -10,8 +10,9 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
 {
     public interface IApplicationRepository
     {
-        Task<List<ApplicationResponse>> GetAllApplications();
-        Task<int> AddApplication(string universityId);
-        Task<bool> ApproveOrRejectApplicationAsync(string applicationId, ApplicationStatus status);
+        Task<List<ApplicationResponse>> GetAllApplicationsAsync();
+        Task<ApplicationResponse> GetAllApplicationByIdAsync(Guid id);
+        Task<int> AddApplication(Guid universityId);
+        Task<bool> ApproveOrRejectApplicationAsync(Guid applicationId, ApplicationStatus status);
     }
 }

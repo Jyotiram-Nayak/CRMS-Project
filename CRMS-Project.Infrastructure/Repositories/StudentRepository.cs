@@ -33,39 +33,39 @@ namespace CRMS_Project.Infrastructure.Repositories
             _context = context;
             _userService = userService;
         }
-        //public async Task<List<StudentResponse>> GetAllStudentsAsync()
-        //{
-        //    var students = await (from user in _userManager.Users
-        //                          join student in _context.Students
-        //                          on user.Id equals student.UserId
-        //                          where user.Role == "student"
-        //                          select new StudentResponse
-        //                          {
-        //                              UserId = user.Id,
-        //                              UniversityId = user.UniversityId,
-        //                              FirstName = user.FirstName,
-        //                              LastName = user.LastName,
-        //                              IsApproved = user.IsApproved,
-        //                              Address = user.Address,
-        //                              Email = user.Email,
-        //                              CreateOn = user.CreateOn,
-        //                              Role = user.Role,
-        //                              StudentId = student.StudentId,
-        //                              RollNo = student.RollNo,
-        //                              Dob = student.Dob,
-        //                              Gender = student.Gender,
-        //                              MaritalStatus = student.MaritalStatus,
-        //                              JoiningDate = student.JoiningDate,
-        //                              GraduationDate = student.GraduationDate
-        //                          }).ToListAsync();
-        //    return students;
-        //}
-        public async Task<List<StudentResponse>> GetStudentAsync(string? userId)
+        public async Task<List<StudentResponse>> GetAllStudentsAsync()
         {
-            var query = (from user in _userManager.Users
+            var students = await (from user in _userManager.Users
+                                  join student in _context.Students
+                                  on user.Id equals student.UserId
+                                  where user.Role == "student"
+                                  select new StudentResponse
+                                  {
+                                      UserId = user.Id,
+                                      UniversityId = user.UniversityId,
+                                      FirstName = user.FirstName,
+                                      LastName = user.LastName,
+                                      IsApproved = user.IsApproved,
+                                      Address = user.Address,
+                                      Email = user.Email,
+                                      CreateOn = user.CreateOn,
+                                      Role = user.Role,
+                                      StudentId = student.StudentId,
+                                      RollNo = student.RollNo,
+                                      Dob = student.Dob,
+                                      Gender = student.Gender,
+                                      MaritalStatus = student.MaritalStatus,
+                                      JoiningDate = student.JoiningDate,
+                                      GraduationDate = student.GraduationDate
+                                  }).ToListAsync();
+            return students;
+        }
+        public async Task<StudentResponse> GetStudentByIdAsync(Guid userId)
+        {
+            var students = await (from user in _userManager.Users
                          join student in _context.Students
                          on user.Id equals student.UserId
-                         where user.Role == "student"
+                         where user.Role == "student" && user.Id == userId
                          select new StudentResponse
                          {
                              UserId = user.Id,
@@ -74,7 +74,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                              LastName = user.LastName,
                              IsApproved = user.IsApproved,
                              Address = user.Address,
-                             Email = user.Email,
+                             Email = user.Email ?? "",
                              CreateOn = user.CreateOn,
                              Role = user.Role,
                              StudentId = student.StudentId,
@@ -84,14 +84,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                              MaritalStatus = student.MaritalStatus,
                              JoiningDate = student.JoiningDate,
                              GraduationDate = student.GraduationDate
-                         }).AsQueryable();
-            if (!string.IsNullOrEmpty(userId))
-            {
-                query = query.Where(x => x.UserId == userId);
-            }
-
-            // Execute query asynchronously and return results
-            var students = await query.ToListAsync();
+                         }).FirstOrDefaultAsync();
             return students;
         }
         public async Task<IdentityResult> AddStudent(StudentRequest studentRequest)
@@ -119,7 +112,7 @@ namespace CRMS_Project.Infrastructure.Repositories
 
             var student = new Student
             {
-                StudentId = Guid.NewGuid().ToString(),
+                StudentId = Guid.NewGuid(),
                 UserId = newUser.Id,
                 RollNo = studentRequest.RollNo,
                 Dob = studentRequest.Dob,
@@ -132,9 +125,9 @@ namespace CRMS_Project.Infrastructure.Repositories
             await _context.SaveChangesAsync();
             return result;
         }
-        public async Task<IdentityResult> DeleteStudent(string id)
+        public async Task<IdentityResult> DeleteStudent(Guid id)
         {
-            var user = await _userManager.FindByIdAsync(id);
+            var user = await _userManager.FindByIdAsync(id.ToString());
             if (user != null && user.Role == UserRoles.Student.ToLower())
             {
                 var result = await _userManager.DeleteAsync(user);

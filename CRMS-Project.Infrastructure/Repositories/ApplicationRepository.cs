@@ -30,57 +30,57 @@ namespace CRMS_Project.Infrastructure.Repositories
             _userManager = userManager;
             _userService = userService;
         }
-        public async Task<List<ApplicationResponse>> GetAllApplications()
+        public async Task<List<ApplicationResponse>> GetAllApplicationsAsync()
         {
             var userRole = _userService.GetUserRole();
             var userId = _userService.GetUserId();
-
-            var query = _context.PlacementApplications.AsQueryable();
-
-            if (userRole == UserRoles.University)
-            {
-                query = query.Where(a => a.UniversityId == userId);
-            }
-            else if (userRole == UserRoles.Company)
-            {
-                query = query.Where(a => a.CompanyId == userId);
-            }
-
-            var applications = await query
-                .Select(a => new ApplicationResponse
-                {
-                    Id = a.Id,
-                    CompanyId = a.CompanyId,
-                    UniversityId = a.UniversityId,
-                    Status = a.Status,
-                    DateSubmitted = a.DateSubmitted,
-                    // Map additional details based on user role
-                    //FirstName = a.ApplicationUser.FirstName,
-                    //LastName = a.User.LastName,
-                    //Email = a.User.Email,
-                    //Address = a.User.Address,
-                    //Website = a.User.Website,
-                    //Image = a.User.Image,
-                    //Role = a.User.Role,
-                    //IsApproved = a.User.IsApproved,
-                    //CreateOn = a.User.CreateOn,
-                    //UpdateOn = a.User.UpdateOn
-                    // Map other properties as needed
-                })
-                .ToListAsync();
-
+            var applications = await (from placementApplication in _context.PlacementApplications
+                                      join user in _userManager.Users
+                                      on (userRole == UserRoles.University ? placementApplication.CompanyId : placementApplication.UniversityId) equals user.Id
+                                      where (userRole == UserRoles.University ? placementApplication.UniversityId : placementApplication.CompanyId) == userId
+                                      select new ApplicationResponse
+                                      {
+                                          Id = placementApplication.Id,
+                                          CompanyId = placementApplication.CompanyId,
+                                          UniversityId = placementApplication.UniversityId,
+                                          Status = placementApplication.Status,
+                                          DateSubmitted = placementApplication.DateSubmitted,
+                                          FirstName = user.FirstName,
+                                          LastName = user.LastName
+                                      }).ToListAsync();
             return applications;
         }
-        public async Task<int> AddApplication(string universityId)
+        public async Task<ApplicationResponse> GetAllApplicationByIdAsync(Guid id)
         {
-            var university = await _userManager.FindByIdAsync(universityId);
+            var userRole = _userService.GetUserRole();
+            var userId = _userService.GetUserId();
+            var applications = await (from placementApplication in _context.PlacementApplications
+                                      join user in _userManager.Users
+                                      on (userRole == UserRoles.University ? placementApplication.CompanyId : placementApplication.UniversityId) equals user.Id
+                                      where (userRole == UserRoles.University ? placementApplication.UniversityId : placementApplication.CompanyId) == userId 
+                                      && placementApplication.Id == id
+                                      select new ApplicationResponse
+                                      {
+                                          Id = placementApplication.Id,
+                                          CompanyId = placementApplication.CompanyId,
+                                          UniversityId = placementApplication.UniversityId,
+                                          Status = placementApplication.Status,
+                                          DateSubmitted = placementApplication.DateSubmitted,
+                                          FirstName = user.FirstName,
+                                          LastName = user.LastName
+                                      }).FirstOrDefaultAsync();
+            return applications;
+        }
+        public async Task<int> AddApplication(Guid universityId)
+        {
+            var university = await _userManager.FindByIdAsync(universityId.ToString());
             if (university == null)
             {
                 return 0;
             }
             var application = new PlacementApplication
             {
-                Id = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid(),
                 UniversityId = university.Id,
                 CompanyId = _userService.GetUserId(),
                 Status = ApplicationStatus.Pending,
@@ -90,7 +90,7 @@ namespace CRMS_Project.Infrastructure.Repositories
             var result = await _context.SaveChangesAsync();
             return result;
         }
-        public async Task<bool> ApproveOrRejectApplicationAsync(string applicationId, ApplicationStatus status)
+        public async Task<bool> ApproveOrRejectApplicationAsync(Guid applicationId, ApplicationStatus status)
         {
             try
             {

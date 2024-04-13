@@ -10,9 +10,9 @@ namespace CRMS_Project.Core.DTO.Response
 {
     public class ApplicationResponse:AuthenticationResponse
     {
-        public string Id { get; set; }
-        public string CompanyId { get; set; }
-        public string UniversityId { get; set; }
+        public Guid Id { get; set; }
+        public Guid CompanyId { get; set; }
+        public Guid UniversityId { get; set; }
         public ApplicationStatus Status { get; set; }
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime DateSubmitted { get; set; }

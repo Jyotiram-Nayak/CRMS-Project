@@ -14,7 +14,7 @@ namespace CRMS_Project.Core.Services
 {
     public class EmailService : IEmailService
     {
-        private const string templatePath = @"EmailTemplate/{0}.html";
+        private const string templatePath = @"wwwroot/EmailTemplate/{0}.html";
         private readonly IOptions<SMTPConfiguration> _smtpconfig;
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;

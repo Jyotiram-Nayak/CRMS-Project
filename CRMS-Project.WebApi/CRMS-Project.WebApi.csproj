@@ -27,4 +27,12 @@
     <ProjectReference Include="..\CRMS-Project.Infrastructure\CRMS-Project.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\EmailTemplate\EmailConfirmation.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\ProfileImage\" />
+  </ItemGroup>
+
 </Project>

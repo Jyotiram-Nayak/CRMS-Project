@@ -20,7 +20,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(option => option.SignIn.RequireConfirmedEmail = true)
+builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(option => option.SignIn.RequireConfirmedEmail = true)
+     .AddRoles<ApplicationRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 

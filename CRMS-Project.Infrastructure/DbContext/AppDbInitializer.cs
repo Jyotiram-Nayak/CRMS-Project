@@ -9,7 +9,7 @@ namespace CRMS_Project.Infrastructure.DbContext
     {
         public static async Task InitializerAsync(IServiceProvider serviceProvider, UserManager<ApplicationUser> userManager)
         {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
             string[] roles = { UserRoles.Admin, UserRoles.University, UserRoles.Company, UserRoles.Student };
             IdentityResult roleResult;
             foreach (var role in roles)
@@ -17,7 +17,13 @@ namespace CRMS_Project.Infrastructure.DbContext
                 var roleExists = await roleManager.RoleExistsAsync(role);
                 if (!roleExists)
                 {
-                    roleResult = await roleManager.CreateAsync(new IdentityRole(role));
+                    roleResult = await roleManager.CreateAsync(new ApplicationRole
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = role,
+                        NormalizedName = role.ToUpper(),
+                        ConcurrencyStamp = Guid.NewGuid().ToString()
+                    });
                 }
             }
             var firstName = "";
@@ -28,6 +34,7 @@ namespace CRMS_Project.Infrastructure.DbContext
             {
                 ApplicationUser user = new ApplicationUser
                 {
+                    Id = Guid.NewGuid(),
                     FirstName = firstName,
                     LastName = lastName,
                     IsApproved = true,
@@ -37,7 +44,7 @@ namespace CRMS_Project.Infrastructure.DbContext
                     EmailConfirmed = true,
                     UserName = email,
                     CreateOn = DateTime.Now,
-                    Role="admin"
+                    Role = "admin"
                 };
                 IdentityResult result = await userManager.CreateAsync(user, password);
                 if (result.Succeeded)

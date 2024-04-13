@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 
 namespace CRMS_Project.WebApi.Controllers
 {
@@ -15,61 +16,62 @@ namespace CRMS_Project.WebApi.Controllers
     public class ApplicationController : ControllerBase
     {
         private readonly IApplicationRepository _applicationRepository;
-        private object response;
         public ApplicationController(IApplicationRepository applicationRepository)
         {
             _applicationRepository = applicationRepository;
         }
-        [HttpGet("get-all-application")]
+        [HttpGet("get-all-applications")]
         public async Task<IActionResult> GetApplications()
         {
-            var result = _applicationRepository.GetAllApplications();
+            var result = _applicationRepository.GetAllApplicationsAsync();
             if (result == null)
             {
-                response = new { success = false, message = "Failed to add Application." };
-                return BadRequest(response);
+                return BadRequest(new { success = false, message = "Failed to fetch applications." });
             };
-            response = new { success = true, message = "Application added successfully...", data = result };
-            return Ok(response);
+            return Ok(new { success = true, message = "Applications fetched successfully...", data = result });
+        }
+        [HttpGet("get-application-details/{id}")]
+        public async Task<IActionResult> GetApplicationDetails(Guid id)
+        {
+            var result = _applicationRepository.GetAllApplicationByIdAsync(id);
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "Failed to fetch application." });
+            };
+            return Ok(new { success = true, message = "Application fetched successfully...", data = result });
         }
         [HttpPost("add-application/{universityId}")]
         [Authorize(Roles = UserRoles.Company)]
-        public async Task<IActionResult> AddApplication([FromRoute]string universityId)
+        public async Task<IActionResult> AddApplication([FromRoute] Guid universityId)
         {
             var result = await _applicationRepository.AddApplication(universityId);
             if (result == 0)
             {
-                response = new { success = false, message = "Failed to add Application."};
-                return BadRequest(response);
+                return BadRequest(new { success = false, message = "Failed to add Application." });
             };
-            response = new { success = true, message = "Application added successfully..."};
-            return Ok(response);
+            return Ok(new { success = true, message = "Application added successfully..." });
         }
         [HttpPut("approve/{applicationId}")]
         [Authorize(Roles = UserRoles.University)]
-        public async Task<IActionResult> ApprovePlacementApplication(string applicationId)
+        public async Task<IActionResult> ApprovePlacementApplication(Guid applicationId)
         {
             bool result = await _applicationRepository.ApproveOrRejectApplicationAsync(applicationId, ApplicationStatus.Approved);
             if (!result)
             {
-                response = new { success = false, message = "Failed to approved application." };
-                return BadRequest(response);
+                return BadRequest(new { success = false, message = "Failed to approve application." });
             };
-            response = new { success = true, message = "Application approved successfully." };
-            return Ok(response);
+            return Ok(new { success = true, message = "Application approved successfully." });
         }
         [HttpPut("reject/{applicationId}")]
         [Authorize(Roles = UserRoles.University)]
-        public async Task<IActionResult> RejectPlacementApplication(string applicationId)
+        public async Task<IActionResult> RejectPlacementApplication(Guid applicationId)
         {
             bool result = await _applicationRepository.ApproveOrRejectApplicationAsync(applicationId, ApplicationStatus.Rejected);
             if (!result)
             {
-                response = new { success = false, message = "Failed to reject application." };
-                return BadRequest(response);
+                return BadRequest(new { success = false, message = "Failed to reject application." });
             };
-            response = new { success = true, message = "Application rejected successfully." };
-            return Ok(response);
+            return Ok(new { success = true, message = "Application rejected successfully." });
         }
     }
 }

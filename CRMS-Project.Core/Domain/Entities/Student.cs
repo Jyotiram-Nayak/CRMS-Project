@@ -12,9 +12,9 @@ namespace CRMS_Project.Core.Domain.Identity
     public class Student
     {
         [Key]
-        public string StudentId { get; set; }
+        public Guid StudentId { get; set; }
         [Required]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         [Required]
         public string RollNo { get; set; }
         [DataType(DataType.Date)]

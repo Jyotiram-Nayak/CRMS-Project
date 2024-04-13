@@ -2,7 +2,7 @@
 {
     public interface IUserService
     {
-        string GetUserId();
+        Guid GetUserId();
         string GetUserRole();
     }
 }

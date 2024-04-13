@@ -32,7 +32,7 @@ namespace CRMS_Project.Core.Services
             {
                 new Claim(ClaimTypes.Name, email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             };
             foreach (var role in roles)
             {

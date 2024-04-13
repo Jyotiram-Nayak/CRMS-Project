@@ -14,8 +14,8 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
     {
         Task<IdentityResult> RegisterUserAsync(RegisterRequest registerRequest);
         Task<SignInResult> LoginAsync(LoginRequest loginRequest);
-        Task<IdentityResult> ConfirmEmail(string uid, string token);
+        Task<IdentityResult> ConfirmEmail(Guid uid, string token);
         Task<IdentityResult> ChangePasswordAsync(ChangePasswordRequest changePassword);
-        Task<AuthenticationResponse> GetUserDetails(string? userId);
+        Task<AuthenticationResponse> GetUserByIdAsunc(Guid? userId);
     }
 }

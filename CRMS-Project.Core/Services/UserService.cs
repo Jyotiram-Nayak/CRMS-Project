@@ -12,9 +12,10 @@ namespace CRMS_Project.Core.Services
         {
             _contextAccessor = contextAccessor;
         }
-        public string GetUserId()
+        public Guid GetUserId()
         {
-            return _contextAccessor.HttpContext.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = new Guid(_contextAccessor.HttpContext.User?.FindFirstValue(ClaimTypes.NameIdentifier));
+            return userId;
         }
         public string GetUserRole()
         {
