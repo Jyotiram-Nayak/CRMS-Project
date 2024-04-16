@@ -31,6 +31,7 @@ builder.Services.AddTransient<IJwtService, JwtService>();
 builder.Services.AddTransient<IStudentRepository, StudentRepository>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IApplicationRepository, ApplicationRepository>();
+builder.Services.AddTransient<IJobRepository, JobRepository>();
 
 //configure services with SMTPConfiguration
 builder.Services.Configure<SMTPConfiguration>(builder.Configuration.GetSection("EmailSettings"));

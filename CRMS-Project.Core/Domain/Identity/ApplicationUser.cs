@@ -13,8 +13,10 @@ namespace CRMS_Project.Core.Domain.Identity
         [Required]
         public bool IsApproved { get; set; }
         public string? Image { get; set; }
+        [Required]
         public string Address { get; set; }
         public string? Website { get; set; }
+        [Required]
         public string Role { get; set; }
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]

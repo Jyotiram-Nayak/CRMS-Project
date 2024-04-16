@@ -13,6 +13,7 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<List<ApplicationResponse>> GetAllApplicationsAsync();
         Task<ApplicationResponse> GetAllApplicationByIdAsync(Guid id);
         Task<int> AddApplication(Guid universityId);
+        Task<int> DeleteApplicationAsync(Guid id);
         Task<bool> ApproveOrRejectApplicationAsync(Guid applicationId, ApplicationStatus status);
     }
 }

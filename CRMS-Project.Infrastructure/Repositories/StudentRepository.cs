@@ -35,10 +35,11 @@ namespace CRMS_Project.Infrastructure.Repositories
         }
         public async Task<List<StudentResponse>> GetAllStudentsAsync()
         {
+            var universityId = _userService.GetUserId();
             var students = await (from user in _userManager.Users
                                   join student in _context.Students
                                   on user.Id equals student.UserId
-                                  where user.Role == "student"
+                                  where user.UniversityId == universityId && user.Role == "student"
                                   select new StudentResponse
                                   {
                                       UserId = user.Id,
@@ -62,10 +63,11 @@ namespace CRMS_Project.Infrastructure.Repositories
         }
         public async Task<StudentResponse> GetStudentByIdAsync(Guid userId)
         {
+            var universityId = _userService.GetUserId();
             var students = await (from user in _userManager.Users
                          join student in _context.Students
                          on user.Id equals student.UserId
-                         where user.Role == "student" && user.Id == userId
+                         where user.UniversityId == universityId && user.Role == "student" && user.Id == userId
                          select new StudentResponse
                          {
                              UserId = user.Id,

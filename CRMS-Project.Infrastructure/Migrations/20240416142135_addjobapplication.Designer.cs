@@ -4,6 +4,7 @@ using CRMS_Project.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CRMS_Project.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240416142135_addjobapplication")]
+    partial class addjobapplication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -115,10 +118,6 @@ namespace CRMS_Project.Infrastructure.Migrations
 
                     b.HasKey("JobId");
 
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("UniversityId");
-
                     b.ToTable("JobPostings");
                 });
 
@@ -141,10 +140,6 @@ namespace CRMS_Project.Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("UniversityId");
 
                     b.ToTable("PlacementApplications");
                 });
@@ -447,44 +442,6 @@ namespace CRMS_Project.Infrastructure.Migrations
                     b.Navigation("JobPosting");
 
                     b.Navigation("Student");
-
-                    b.Navigation("University");
-                });
-
-            modelBuilder.Entity("CRMS_Project.Core.Domain.Entities.JobPosting", b =>
-                {
-                    b.HasOne("CRMS_Project.Core.Domain.Identity.ApplicationUser", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CRMS_Project.Core.Domain.Identity.ApplicationUser", "University")
-                        .WithMany()
-                        .HasForeignKey("UniversityId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-
-                    b.Navigation("University");
-                });
-
-            modelBuilder.Entity("CRMS_Project.Core.Domain.Entities.PlacementApplication", b =>
-                {
-                    b.HasOne("CRMS_Project.Core.Domain.Identity.ApplicationUser", "Company")
-                        .WithMany()
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("CRMS_Project.Core.Domain.Identity.ApplicationUser", "University")
-                        .WithMany()
-                        .HasForeignKey("UniversityId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Company");
 
                     b.Navigation("University");
                 });

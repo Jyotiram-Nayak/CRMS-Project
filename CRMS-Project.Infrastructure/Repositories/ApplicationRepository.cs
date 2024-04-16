@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace CRMS_Project.Infrastructure.Repositories
 {
@@ -87,6 +88,14 @@ namespace CRMS_Project.Infrastructure.Repositories
                 DateSubmitted = DateTime.Now
             };
             _context.PlacementApplications.Add(application);
+            var result = await _context.SaveChangesAsync();
+            return result;
+        }
+        public async Task<int> DeleteApplicationAsync(Guid id)
+        {
+            var application = await _context.PlacementApplications.FindAsync(id);
+            if(application == null) { return 0; }
+            _context.PlacementApplications.Remove(application);
             var result = await _context.SaveChangesAsync();
             return result;
         }

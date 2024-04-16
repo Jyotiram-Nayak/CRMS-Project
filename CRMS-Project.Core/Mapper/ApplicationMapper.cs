@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using CRMS_Project.Core.Domain.Entities;
 using CRMS_Project.Core.Domain.Identity;
 using CRMS_Project.Core.DTO.Response;
 using System;
@@ -13,8 +14,7 @@ namespace CRMS_Project.Core.Mapper
     {
         public ApplicationMapper()
         {
-            //CreateMap<AuthenticationResponse, ApplicationUser>();
-            CreateMap<ApplicationUser,AuthenticationResponse>();
+            CreateMap<JobPosting, JobPostingResponse>();
         }
     }
 }

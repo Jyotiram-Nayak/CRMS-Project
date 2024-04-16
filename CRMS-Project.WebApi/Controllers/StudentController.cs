@@ -1,10 +1,7 @@
-﻿using Azure;
-using CRMS_Project.Core.Domain.RepositoryContracts;
+﻿using CRMS_Project.Core.Domain.RepositoryContracts;
 using CRMS_Project.Core.DTO;
 using CRMS_Project.Core.DTO.Request;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CRMS_Project.WebApi.Controllers
