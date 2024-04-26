@@ -61,6 +61,18 @@ builder.Services.AddAuthentication(option =>
     };
 });
 
+// Add CORS middleware
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -87,6 +99,8 @@ using (var scope = app.Services.CreateScope())
         throw;
     }
 }
+
+app.UseCors("AllowAllOrigins"); // Apply CORS policy
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -20,6 +20,17 @@ namespace CRMS_Project.WebApi.Controllers
             _authRepository = authRepository;
             _jwtService = jwtService;
         }
+        [HttpGet("get-user-profile")]
+        [Authorize]
+        public async Task<IActionResult> GetUserById()
+        {
+            var result = await _authRepository.GetUserByIdAsunc(null);
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "User not found." });
+            }
+            return Ok(new { success = true, message = "User details fetched successfully.", data = result });
+        }
         [HttpGet("get-user-details/{userId}")]
         [Authorize]
         public async Task<IActionResult> GetUserById(Guid? userId)
@@ -32,7 +43,7 @@ namespace CRMS_Project.WebApi.Controllers
             return Ok(new { success = true, message = "User details fetched successfully.", data = result });
         }
         [HttpPost("register-user")]
-        public async Task<IActionResult> Register([FromForm]RegisterRequest registerRequest)
+        public async Task<IActionResult> Register([FromBody]RegisterRequest registerRequest)
         {
             var result =await _authRepository.RegisterUserAsync(registerRequest);
             if (!result.Succeeded)
@@ -52,7 +63,7 @@ namespace CRMS_Project.WebApi.Controllers
             var token = await _jwtService.GenerateJWTTokenAsync(loginRequest.Email);
             return Ok(new { success = true, message = "Sign in successful.", data = new { token } });
         }
-        [HttpPut("confirm-email")]
+        [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] Guid uid, [FromQuery] string token)
         {
             if (string.IsNullOrEmpty(uid.ToString()) || string.IsNullOrEmpty(token))

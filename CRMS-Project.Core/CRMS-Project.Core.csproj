@@ -8,13 +8,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Domain\Entities\Company.cs" />
-    <Compile Remove="Domain\Entities\University.cs" />
-    <Compile Remove="Domain\Entities\UniversityCompany.cs" />
+    <Compile Remove="Helpers\**" />
+    <EmbeddedResource Remove="Helpers\**" />
+    <None Remove="Helpers\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Helpers\" />
+    <Compile Remove="Domain\Entities\Company.cs" />
+    <Compile Remove="Domain\Entities\University.cs" />
+    <Compile Remove="Domain\Entities\UniversityCompany.cs" />
   </ItemGroup>
 
   <ItemGroup>

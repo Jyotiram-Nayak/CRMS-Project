@@ -29,7 +29,7 @@ namespace CRMS_Project.Core.DTO.Request
         public string Address { get; set; }
         [Url(ErrorMessage = "Invalid URL")]
         public string? Website { get; set; }
-        public IFormFile? Image { get; set; }
+        public string? Image { get; set; }
         [Required(ErrorMessage = "Role is required")]
         public string Role { get; set; } = string.Empty;
     }

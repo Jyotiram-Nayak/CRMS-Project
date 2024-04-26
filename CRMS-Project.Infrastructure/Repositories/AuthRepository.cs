@@ -36,20 +36,20 @@ namespace CRMS_Project.Infrastructure.Repositories
         }
         public async Task<IdentityResult> RegisterUserAsync(RegisterRequest user)
         {
-            string ImagePath="";
-            if (user.Image != null)
-            {
-                ImagePath = "ProfileImage/";
-                ImagePath += Guid.NewGuid().ToString()+"_"+user.Image.FileName;
-                string serverFolder = Path.Combine(_webHostEnvironment.WebRootPath, ImagePath);
-                await user.Image.CopyToAsync(new FileStream(serverFolder,FileMode.Create));
-            }
+            //string ImagePath="";
+            //if (user.Image != null)
+            //{
+            //    ImagePath = "ProfileImage/";
+            //    ImagePath += Guid.NewGuid().ToString()+"_"+user.Image.FileName;
+            //    string serverFolder = Path.Combine(_webHostEnvironment.WebRootPath, ImagePath);
+            //    await user.Image.CopyToAsync(new FileStream(serverFolder,FileMode.Create));
+            //}
             ApplicationUser newUser = new ApplicationUser
             {
                 FirstName=user.FirstName,
                 LastName=user.LastName,
                 IsApproved = false,
-                Image = ImagePath,
+                Image = user.Image,
                 Address=user.Address,
                 Website=user.Website,
                 Email = user.Email,

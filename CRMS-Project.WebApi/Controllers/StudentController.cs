@@ -27,7 +27,7 @@ namespace CRMS_Project.WebApi.Controllers
             return Ok(new { success = true, message = "Students fetched successfully...", data = result });
         }
         [HttpGet("get-student-details/{userId}")]
-        public async Task<IActionResult> GetAllStudents([FromRoute]Guid userId)
+        public async Task<IActionResult> GetAllStudents([FromRoute] Guid userId)
         {
             var result = await _studentRepository.GetStudentByIdAsync(userId);
             if (result == null)
@@ -45,6 +45,16 @@ namespace CRMS_Project.WebApi.Controllers
                 return BadRequest(new { success = false, message = "Failed to Add Student.", data = result });
             };
             return Ok(new { success = true, message = "Register Student successfully...", data = result });
+        }
+        [HttpPut("update-student/{studentId}")]
+        public async Task<IActionResult> UpdateStudent([FromRoute] Guid studentId, StudentRequest studentRequest)
+        {
+            var result = await _studentRepository.UpdateStudentAsync(studentId, studentRequest);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { success = false, message = "Failed to update Student.", data = result });
+            };
+            return Ok(new { success = true, message = "Student updated successfully...", data = result });
         }
         [HttpDelete("delete-student")]
         public async Task<IActionResult> DeleteStudent([FromQuery] Guid userId)

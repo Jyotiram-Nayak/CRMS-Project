@@ -8,5 +8,11 @@ namespace CRMS_Project.Infrastructure.Repositories
 {
     public class JobApplicationRepository
     {
+        public JobApplicationRepository()
+        {
+            
+        }
+
+     
     }
 }

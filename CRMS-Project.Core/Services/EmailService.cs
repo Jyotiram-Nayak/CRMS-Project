@@ -82,7 +82,7 @@ namespace CRMS_Project.Core.Services
                 mailMessage.To.Add(toEmail);
             }
             //mailMessage.To.Add(emailMessage.ToEmails);
-            NetworkCredential networkCredential = new NetworkCredential("c4f0f64f78e3eb", "57f9e37d311828");
+            NetworkCredential networkCredential = new NetworkCredential("2f20c76a19b259", "1898ebb259012c");
 
             SmtpClient smtpClient = new SmtpClient
             {
@@ -91,8 +91,15 @@ namespace CRMS_Project.Core.Services
                 EnableSsl = true,
                 Credentials = networkCredential
             };
-            mailMessage.BodyEncoding = Encoding.Default;
-            await smtpClient.SendMailAsync(mailMessage);
+            try
+            {
+                mailMessage.BodyEncoding = Encoding.Default;
+                await smtpClient.SendMailAsync(mailMessage);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
         /// <summary>
         /// Update the Email body

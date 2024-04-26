@@ -127,6 +127,35 @@ namespace CRMS_Project.Infrastructure.Repositories
             await _context.SaveChangesAsync();
             return result;
         }
+        public async Task<IdentityResult> UpdateStudentAsync(Guid studentId, StudentRequest studentRequest)
+        {
+            var student = await _userManager.FindByIdAsync(studentId.ToString());
+            if (student == null) { return IdentityResult.Failed(new IdentityError { Description = $"Student with ID '{studentId}' not found." }); }
+            student.FirstName = studentRequest.FirstName;
+            student.LastName = studentRequest.LastName;
+            student.IsApproved = true;
+            student.Address = studentRequest.Address;
+            student.Email = studentRequest.Email;
+            student.UserName = studentRequest.Email;
+            student.UpdateOn = DateTime.Now;
+
+            var updateResult = await _userManager.UpdateAsync(student);
+            if (!updateResult.Succeeded) { return IdentityResult.Failed(new IdentityError { Description = $"Failed to update student with Name '{student.FirstName}'." }); }
+            var stdDetails = await _context.Students.Where(s => s.UserId == student.Id).FirstOrDefaultAsync();
+            if (stdDetails == null) { return IdentityResult.Failed(new IdentityError { Description = $"Student details not found for user ID '{student.Id}'." }); }
+            stdDetails.RollNo = studentRequest.RollNo;
+            stdDetails.Dob = studentRequest.Dob;
+            stdDetails.Gender = studentRequest.Gender;
+            stdDetails.MaritalStatus = studentRequest.MaritalStatus;
+            stdDetails.JoiningDate = studentRequest.JoiningDate;
+            stdDetails.GraduationDate = studentRequest.GraduationDate;
+
+            var status = await _context.SaveChangesAsync();
+            if (status == 0)
+                return IdentityResult.Failed(new IdentityError { Description = $"Student with ID '{student.Id}' not found." });
+            return IdentityResult.Success;
+        }
+
         public async Task<IdentityResult> DeleteStudent(Guid id)
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
