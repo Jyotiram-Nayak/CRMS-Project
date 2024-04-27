@@ -4,6 +4,7 @@ using CRMS_Project.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CRMS_Project.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240427042439_addFieldsToUserTable")]
+    partial class addFieldsToUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -74,7 +77,7 @@ namespace CRMS_Project.Infrastructure.Migrations
 
                     b.HasIndex("UniversityId");
 
-                    b.ToTable("JobApplications", (string)null);
+                    b.ToTable("JobApplications");
                 });
 
             modelBuilder.Entity("CRMS_Project.Core.Domain.Entities.JobPosting", b =>
@@ -119,7 +122,7 @@ namespace CRMS_Project.Infrastructure.Migrations
 
                     b.HasIndex("UniversityId");
 
-                    b.ToTable("JobPostings", (string)null);
+                    b.ToTable("JobPostings");
                 });
 
             modelBuilder.Entity("CRMS_Project.Core.Domain.Entities.PlacementApplication", b =>
@@ -146,7 +149,7 @@ namespace CRMS_Project.Infrastructure.Migrations
 
                     b.HasIndex("UniversityId");
 
-                    b.ToTable("PlacementApplications", (string)null);
+                    b.ToTable("PlacementApplications");
                 });
 
             modelBuilder.Entity("CRMS_Project.Core.Domain.Identity.ApplicationRole", b =>
@@ -321,7 +324,7 @@ namespace CRMS_Project.Infrastructure.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

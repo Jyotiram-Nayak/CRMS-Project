@@ -26,9 +26,17 @@ namespace CRMS_Project.Core.DTO.Request
 
         [Compare("Password", ErrorMessage = "Passwords do not match")]
         public string ConfirmPassword { get; set; } = string.Empty;
+        [Required]
+        public string PhoneNumber { get; set; }
+        [Required]
         public string Address { get; set; }
+        [Required]
+        public string City { get; set; }
+        [Required]
+        public string State { get; set; }
         [Url(ErrorMessage = "Invalid URL")]
         public string? Website { get; set; }
+        public string? Bio { get; set; }
         public string? Image { get; set; }
         [Required(ErrorMessage = "Role is required")]
         public string Role { get; set; } = string.Empty;

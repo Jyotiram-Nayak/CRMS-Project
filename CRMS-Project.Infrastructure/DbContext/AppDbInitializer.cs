@@ -38,13 +38,17 @@ namespace CRMS_Project.Infrastructure.DbContext
                     FirstName = firstName,
                     LastName = lastName,
                     IsApproved = true,
-                    Address = "...",
-                    Website = "...",
+                    Role = "admin",
                     Email = email,
                     EmailConfirmed = true,
+                    Address = "...",
+                    PhoneNumber = "...",
+                    City = "...",
+                    State = "...",
+                    Website = "...",
+                    Bio = "...",
                     UserName = email,
                     CreateOn = DateTime.Now,
-                    Role = "admin"
                 };
                 IdentityResult result = await userManager.CreateAsync(user, password);
                 if (result.Succeeded)

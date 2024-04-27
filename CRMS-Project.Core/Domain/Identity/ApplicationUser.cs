@@ -15,7 +15,12 @@ namespace CRMS_Project.Core.Domain.Identity
         public string? Image { get; set; }
         [Required]
         public string Address { get; set; }
+        [Required]
+        public string City { get; set; }
+        [Required]
+        public string State { get; set; }
         public string? Website { get; set; }
+        public string? Bio { get; set; } 
         [Required]
         public string Role { get; set; }
         [DataType(DataType.Date)]

@@ -56,10 +56,10 @@ namespace CRMS_Project.WebApi.Controllers
             };
             return Ok(new { success = true, message = "Student updated successfully...", data = result });
         }
-        [HttpDelete("delete-student")]
-        public async Task<IActionResult> DeleteStudent([FromQuery] Guid userId)
+        [HttpDelete("delete-student/{studentId}")]
+        public async Task<IActionResult> DeleteStudent(Guid studentId)
         {
-            var result = await _studentRepository.DeleteStudent(userId);
+            var result = await _studentRepository.DeleteStudent(studentId);
             if (!result.Succeeded)
             {
                 return BadRequest(new { success = false, message = "Failed to Delete Student.", error = result });

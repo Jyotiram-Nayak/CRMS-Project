@@ -35,7 +35,7 @@ namespace CRMS_Project.WebApi.Controllers
         [Authorize(Roles = UserRoles.Company+","+ UserRoles.University)]
         public async Task<IActionResult> GetApplicationDetails(Guid id)
         {
-            var result = _applicationRepository.GetAllApplicationByIdAsync(id);
+            var result = _applicationRepository.GetApplicationByIdAsync(id);
             if (result == null)
             {
                 return BadRequest(new { success = false, message = "Failed to fetch application." });

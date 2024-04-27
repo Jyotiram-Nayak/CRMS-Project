@@ -13,8 +13,12 @@ namespace CRMS_Project.Core.DTO.Response
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
         public string Address { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string State { get; set; } = string.Empty;
         public string? Website { get; set; }
+        public string? Bio { get; set; }
         public string? Image { get; set; }
         public string Role { get; set; } = string.Empty;
         public bool IsApproved { get; set; }

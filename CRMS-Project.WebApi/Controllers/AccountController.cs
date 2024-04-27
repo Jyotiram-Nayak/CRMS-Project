@@ -1,5 +1,6 @@
 ﻿using Azure;
 using CRMS_Project.Core.Domain.RepositoryContracts;
+using CRMS_Project.Core.DTO;
 using CRMS_Project.Core.DTO.Request;
 using CRMS_Project.Core.ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
@@ -61,7 +62,8 @@ namespace CRMS_Project.WebApi.Controllers
                 return Unauthorized(new { success = false, message = "Sign in failed. Invalid email or password." });
             }
             var token = await _jwtService.GenerateJWTTokenAsync(loginRequest.Email);
-            return Ok(new { success = true, message = "Sign in successful.", data = new { token } });
+            var role = await _authRepository.GetUserRole(loginRequest.Email);
+            return Ok(new { success = true, message = "Sign in successful.", data = new { token,role } });
         }
         [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] Guid uid, [FromQuery] string token)
@@ -87,6 +89,28 @@ namespace CRMS_Project.WebApi.Controllers
                 return BadRequest(new { success = false, message = "Failed to change password." , errors = result.Errors });
             }
             return Ok(new { success = true, message = "Password changed successfully.", data = result });
+        }
+        [HttpGet("get-all-company")]
+        [Authorize]
+        public async Task<IActionResult> GetAllCompany()
+        {
+            var result = await _authRepository.GetAllUserByRole(UserRoles.Company.ToLower());
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "User not found." });
+            }
+            return Ok(new { success = true, message = "User details fetched successfully.", data = result });
+        }
+        [HttpGet("get-all-university")]
+        [Authorize]
+        public async Task<IActionResult> GetAllUniversity()
+        {
+            var result = await _authRepository.GetAllUserByRole(UserRoles.University.ToLower());
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "User not found." });
+            }
+            return Ok(new { success = true, message = "User details fetched successfully.", data = result });
         }
     }
 }

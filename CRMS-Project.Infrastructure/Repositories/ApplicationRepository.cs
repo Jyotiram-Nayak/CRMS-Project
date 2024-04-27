@@ -47,11 +47,18 @@ namespace CRMS_Project.Infrastructure.Repositories
                                           Status = placementApplication.Status,
                                           DateSubmitted = placementApplication.DateSubmitted,
                                           FirstName = user.FirstName,
-                                          LastName = user.LastName
+                                          LastName = user.LastName,
+                                          Email = user.Email ?? "",
+                                          PhoneNumber = user.PhoneNumber ?? "",
+                                          City = user.City,
+                                          State = user.State,
+                                          Website = user.Website,
+                                          Bio = user.Bio,
+                                          Address = user.Address,
                                       }).ToListAsync();
             return applications;
         }
-        public async Task<ApplicationResponse> GetAllApplicationByIdAsync(Guid id)
+        public async Task<ApplicationResponse> GetApplicationByIdAsync(Guid id)
         {
             var userRole = _userService.GetUserRole();
             var userId = _userService.GetUserId();
@@ -68,7 +75,14 @@ namespace CRMS_Project.Infrastructure.Repositories
                                           Status = placementApplication.Status,
                                           DateSubmitted = placementApplication.DateSubmitted,
                                           FirstName = user.FirstName,
-                                          LastName = user.LastName
+                                          LastName = user.LastName,
+                                          Email = user.Email ?? "",
+                                          PhoneNumber = user.PhoneNumber ?? "",
+                                          City = user.City,
+                                          State = user.State,
+                                          Website = user.Website,
+                                          Bio = user.Bio,
+                                          Address = user.Address,
                                       }).FirstOrDefaultAsync();
             return applications;
         }
@@ -86,6 +100,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                 CompanyId = _userService.GetUserId(),
                 Status = ApplicationStatus.Pending,
                 DateSubmitted = DateTime.Now
+
             };
             _context.PlacementApplications.Add(application);
             var result = await _context.SaveChangesAsync();

@@ -8,6 +8,7 @@ using CRMS_Project.Core.ServiceContracts;
 using CRMS_Project.Core.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace CRMS_Project.Infrastructure.Repositories
 {
@@ -36,26 +37,22 @@ namespace CRMS_Project.Infrastructure.Repositories
         }
         public async Task<IdentityResult> RegisterUserAsync(RegisterRequest user)
         {
-            //string ImagePath="";
-            //if (user.Image != null)
-            //{
-            //    ImagePath = "ProfileImage/";
-            //    ImagePath += Guid.NewGuid().ToString()+"_"+user.Image.FileName;
-            //    string serverFolder = Path.Combine(_webHostEnvironment.WebRootPath, ImagePath);
-            //    await user.Image.CopyToAsync(new FileStream(serverFolder,FileMode.Create));
-            //}
             ApplicationUser newUser = new ApplicationUser
             {
-                FirstName=user.FirstName,
-                LastName=user.LastName,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 IsApproved = false,
                 Image = user.Image,
-                Address=user.Address,
-                Website=user.Website,
+                PhoneNumber = user.PhoneNumber,
+                Address = user.Address,
+                City = user.City,
+                State = user.State,
+                Website = user.Website,
+                Bio = user.Bio,
                 Email = user.Email,
                 UserName = user.Email,
                 CreateOn = DateTime.Now,
-                Role=user.Role.ToLower(),
+                Role = user.Role.ToLower(),
             };
             IdentityResult result = await _userManager.CreateAsync(newUser, user.Password);
             if (!result.Succeeded)
@@ -108,27 +105,65 @@ namespace CRMS_Project.Infrastructure.Repositories
                 userId = _userService.GetUserId();
             }
             var user = await _userManager.FindByIdAsync(userId.ToString());
-            if(user == null) { return null; }
+            if (user == null) { return null; }
             var userdetails = new AuthenticationResponse
             {
-                Id= user.Id,
+                Id = user.Id,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Email = user.Email ?? "",
-                Address= user.Address,
+                PhoneNumber = user.PhoneNumber ?? "",
+                Address = user.Address,
+                City = user.City,
+                State = user.State,
                 Website = user.Website,
-                Image= user.Image,
-                Role= user.Role,
-                IsApproved= user.IsApproved,
-                CreateOn= user.CreateOn,
-                UpdateOn= user.UpdateOn,
+                Bio = user.Bio,
+                Image = user.Image,
+                Role = user.Role,
+                IsApproved = user.IsApproved,
+                CreateOn = user.CreateOn,
+                UpdateOn = user.UpdateOn,
             };
 
             return userdetails;
         }
-        //public async Task<AuthenticationResponse> GetAllUser(UserRoles userRoles)
-        //{
-            
-        //}
+        public async Task<List<AuthenticationResponse>> GetAllUserByRole(string role)
+        {
+            var user = await _userManager.Users.Where(x => x.Role == role).Select(x => new AuthenticationResponse
+            {
+                Id = x.Id,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                Email = x.Email ?? "",
+                PhoneNumber = x.PhoneNumber ?? "",
+                Address = x.Address,
+                City = x.City,
+                State = x.State,
+                Website = x.Website,
+                Bio = x.Bio,
+                Image = x.Image,
+                Role = x.Role,
+                IsApproved = x.IsApproved,
+                CreateOn = x.CreateOn,
+                UpdateOn = x.UpdateOn,
+            }).ToListAsync();
+
+            return user;
+        }
+        public async Task<string> GetUserRole(string userEmail)
+        {
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with Email '{userEmail}'.");
+            }
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles == null || roles.Count == 0)
+            {
+                throw new ApplicationException($"No roles found for user with Email '{userEmail}'.");
+            }
+            // Assuming the user has only one role for simplicity
+            return roles.FirstOrDefault();
+        }
     }
 }
