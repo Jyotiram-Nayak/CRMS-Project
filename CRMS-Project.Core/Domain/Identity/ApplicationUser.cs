@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using CRMS_Project.Core.Enums;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
 namespace CRMS_Project.Core.Domain.Identity
@@ -20,7 +21,8 @@ namespace CRMS_Project.Core.Domain.Identity
         [Required]
         public string State { get; set; }
         public string? Website { get; set; }
-        public string? Bio { get; set; } 
+        public string? Bio { get; set; }
+        public StudentCourse? Course { get; set; }
         [Required]
         public string Role { get; set; }
         [DataType(DataType.Date)]

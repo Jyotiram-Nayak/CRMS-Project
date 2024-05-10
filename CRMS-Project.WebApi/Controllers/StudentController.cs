@@ -17,9 +17,9 @@ namespace CRMS_Project.WebApi.Controllers
             _studentRepository = studentRepository;
         }
         [HttpGet("get-all-students")]
-        public async Task<IActionResult> GetAllStudents()
+        public async Task<IActionResult> GetAllStudents([FromQuery]FilterStudentRequest filterStudent)
         {
-            var result = await _studentRepository.GetAllStudentsAsync();
+            var result = await _studentRepository.GetAllStudentsAsync(filterStudent);
             if (result == null)
             {
                 return BadRequest(new { success = false, message = "Failed to Fetchd Students.", data = result });
@@ -37,7 +37,7 @@ namespace CRMS_Project.WebApi.Controllers
             return Ok(new { success = true, message = "Student details fetched successfully...", data = result });
         }
         [HttpPost("add-student")]
-        public async Task<IActionResult> AddStudent(StudentRequest studentRequest)
+        public async Task<IActionResult> AddStudent([FromForm]StudentRequest studentRequest)
         {
             var result = await _studentRepository.AddStudent(studentRequest);
             if (!result.Succeeded)
@@ -47,7 +47,7 @@ namespace CRMS_Project.WebApi.Controllers
             return Ok(new { success = true, message = "Register Student successfully...", data = result });
         }
         [HttpPut("update-student/{studentId}")]
-        public async Task<IActionResult> UpdateStudent([FromRoute] Guid studentId, StudentRequest studentRequest)
+        public async Task<IActionResult> UpdateStudent([FromRoute] Guid studentId, [FromForm] UpdateStudentRequest studentRequest)
         {
             var result = await _studentRepository.UpdateStudentAsync(studentId, studentRequest);
             if (!result.Succeeded)

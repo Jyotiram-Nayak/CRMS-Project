@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Repositories\ApplicationRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CRMS-Project.Core\CRMS-Project.Core.csproj" />
   </ItemGroup>
 

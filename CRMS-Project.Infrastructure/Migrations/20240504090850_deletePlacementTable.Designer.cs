@@ -4,6 +4,7 @@ using CRMS_Project.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CRMS_Project.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240504090850_deletePlacementTable")]
+    partial class deletePlacementTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,21 +33,6 @@ namespace CRMS_Project.Infrastructure.Migrations
 
                     b.Property<DateTime>("AppliedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool?>("AssessmentCompleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("AssessmentCompletionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("AssessmentFeedback")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AssessmentLink")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AssessmentScore")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
@@ -98,10 +86,6 @@ namespace CRMS_Project.Infrastructure.Migrations
 
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Courses")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreateOn")
                         .HasColumnType("datetime2");
@@ -301,9 +285,6 @@ namespace CRMS_Project.Infrastructure.Migrations
 
                     b.Property<DateTime?>("GraduationDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool?>("IsSelected")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("JoiningDate")
                         .HasColumnType("datetime2");

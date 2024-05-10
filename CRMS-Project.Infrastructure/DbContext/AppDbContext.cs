@@ -13,7 +13,7 @@ namespace CRMS_Project.Infrastructure.DbContext
 
         }
         public DbSet<Student> Students { get; set; }
-        public DbSet<PlacementApplication> PlacementApplications { get; set; }
+        //public DbSet<PlacementApplication> PlacementApplications { get; set; }
         public DbSet<JobPosting> JobPostings { get; set; }
         public DbSet<JobApplication> JobApplications { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -62,17 +62,17 @@ namespace CRMS_Project.Infrastructure.DbContext
                 .HasForeignKey(ja => ja.UniversityId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<PlacementApplication>()
-                .HasOne(ja => ja.Company)
-                .WithMany()
-                .HasForeignKey(ja => ja.CompanyId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<PlacementApplication>()
+            //    .HasOne(ja => ja.Company)
+            //    .WithMany()
+            //    .HasForeignKey(ja => ja.CompanyId)
+            //    .OnDelete(DeleteBehavior.Restrict);
             
-            modelBuilder.Entity<PlacementApplication>()
-                .HasOne(ja => ja.University)
-                .WithMany()
-                .HasForeignKey(ja => ja.UniversityId)
-                .OnDelete(DeleteBehavior.Restrict);
+            //modelBuilder.Entity<PlacementApplication>()
+            //    .HasOne(ja => ja.University)
+            //    .WithMany()
+            //    .HasForeignKey(ja => ja.UniversityId)
+            //    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -67,11 +67,8 @@ namespace CRMS_Project.Infrastructure.Repositories
                 case "company":
                     await _userManager.AddToRoleAsync(newUser, UserRoles.Company);
                     break;
-                case "student":
-                    await _userManager.AddToRoleAsync(newUser, UserRoles.Student);
-                    break;
                 default:
-                    await _userManager.AddToRoleAsync(newUser, UserRoles.Student);
+                    await _userManager.AddToRoleAsync(newUser, UserRoles.University);
                     break;
             }
             await _emailService.SendEmailConfirmationAsync(newUser);
@@ -85,7 +82,8 @@ namespace CRMS_Project.Infrastructure.Repositories
         public async Task<IdentityResult> ConfirmEmail(Guid uid, string token)
         {
             token = token.Replace(" ", "+");
-            var result = await _userManager.ConfirmEmailAsync(await _userManager.FindByIdAsync(uid.ToString()), token);
+            var user = await _userManager.FindByIdAsync(uid.ToString());
+            var result = await _userManager.ConfirmEmailAsync(user, token);
             return result;
         }
         public async Task<IdentityResult> ChangePasswordAsync(ChangePasswordRequest changePassword)
@@ -164,6 +162,30 @@ namespace CRMS_Project.Infrastructure.Repositories
             }
             // Assuming the user has only one role for simplicity
             return roles.FirstOrDefault();
+        }
+        public async Task<IdentityResult> UpdateUserAsync(UpdateUserRequest updateUser)
+        {
+            var userId = _userService.GetUserId().ToString();
+            // Find the user by userId
+            var user = await _userManager.FindByIdAsync(userId);
+            
+            if (user == null)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = $"User with ID '{userId}' not found." });
+            }
+            user.FirstName = updateUser.FirstName;
+            user.LastName = updateUser.LastName;
+            user.Email = updateUser.Email;
+            user.PhoneNumber = updateUser.PhoneNumber;
+            user.Address = updateUser.Address;
+            user.City = updateUser.City;
+            user.State = updateUser.State;
+            user.Website = updateUser.Website;
+            user.Bio = updateUser.Bio;
+            user.Image = updateUser.Image;
+            user.UpdateOn = DateTime.Now;
+            // Call UserManager's UpdateAsync method to update the user
+            return await _userManager.UpdateAsync(user);
         }
     }
 }

@@ -39,6 +39,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                                       join user in _userManager.Users
                                       on (userRole == UserRoles.University ? placementApplication.CompanyId : placementApplication.UniversityId) equals user.Id
                                       where (userRole == UserRoles.University ? placementApplication.UniversityId : placementApplication.CompanyId) == userId
+                                      orderby placementApplication.DateSubmitted descending
                                       select new ApplicationResponse
                                       {
                                           Id = placementApplication.Id,
@@ -65,7 +66,7 @@ namespace CRMS_Project.Infrastructure.Repositories
             var applications = await (from placementApplication in _context.PlacementApplications
                                       join user in _userManager.Users
                                       on (userRole == UserRoles.University ? placementApplication.CompanyId : placementApplication.UniversityId) equals user.Id
-                                      where (userRole == UserRoles.University ? placementApplication.UniversityId : placementApplication.CompanyId) == userId 
+                                      where (userRole == UserRoles.University ? placementApplication.UniversityId : placementApplication.CompanyId) == userId
                                       && placementApplication.Id == id
                                       select new ApplicationResponse
                                       {
@@ -93,6 +94,14 @@ namespace CRMS_Project.Infrastructure.Repositories
             {
                 return 0;
             }
+            var approvedUniversity = _context.PlacementApplications
+                .Where(x => x.UniversityId == universityId &&
+                (x.Status == ApplicationStatus.Approved || x.Status == ApplicationStatus.Pending))
+                .FirstOrDefault();
+            if (approvedUniversity != null)
+            {
+                return 1;
+            }
             var application = new PlacementApplication
             {
                 Id = Guid.NewGuid(),
@@ -109,7 +118,7 @@ namespace CRMS_Project.Infrastructure.Repositories
         public async Task<int> DeleteApplicationAsync(Guid id)
         {
             var application = await _context.PlacementApplications.FindAsync(id);
-            if(application == null) { return 0; }
+            if (application == null) { return 0; }
             _context.PlacementApplications.Remove(application);
             var result = await _context.SaveChangesAsync();
             return result;
@@ -133,6 +142,20 @@ namespace CRMS_Project.Infrastructure.Repositories
                 return false;
             }
         }
+        public async Task<List<ApprovedUniversityResponse>> GetAllApprovedUniversity()
+        {
+            var userId = _userService.GetUserId();
+            var universities = await _context.PlacementApplications
+                .Include(x => x.University) // Include the University navigation property
+                .Where(x => x.CompanyId == userId && x.Status == ApplicationStatus.Approved)
+                .Select(x => new ApprovedUniversityResponse
+                {
+                    UniversityId = x.UniversityId,
+                    FullName = x.University.FirstName + " " + x.University.LastName,
+                })
+                .ToListAsync();
 
+            return universities;
+        }
     }
 }

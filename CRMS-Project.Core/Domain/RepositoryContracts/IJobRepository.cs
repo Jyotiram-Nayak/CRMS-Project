@@ -1,6 +1,7 @@
 ﻿using CRMS_Project.Core.Domain.Entities;
 using CRMS_Project.Core.DTO.Request;
 using CRMS_Project.Core.DTO.Response;
+using CRMS_Project.Core.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +17,7 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<List<JobPostingResponse>> GetAllJobsAsync();
         Task<int> UpdateJobAsync(Guid jobId, JobPostingRequest jobPosting);
         Task<int> DeleteJobAsync(Guid jobId);
+        Task<bool> ApproveOrRejectApplicationAsync(Guid jobId, ApplicationStatus status);
+        Task<List<JobPostingResponse>> GetAllApprovedJobByUniversityId(Guid universityId);
     }
 }

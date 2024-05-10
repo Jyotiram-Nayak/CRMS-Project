@@ -1,9 +1,11 @@
 ﻿using Azure;
+using CRMS_Project.Core.Domain.Identity;
 using CRMS_Project.Core.Domain.RepositoryContracts;
 using CRMS_Project.Core.DTO;
 using CRMS_Project.Core.DTO.Request;
 using CRMS_Project.Core.ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CRMS_Project.WebApi.Controllers
@@ -15,11 +17,15 @@ namespace CRMS_Project.WebApi.Controllers
     {
         private readonly IAuthRepository _authRepository;
         private readonly IJwtService _jwtService;
+        private readonly UserManager<ApplicationUser> _userManager;
+
         public AccountController(IAuthRepository authRepository,
-            IJwtService jwtService)
+            IJwtService jwtService,
+            UserManager<ApplicationUser> userManager)
         {
             _authRepository = authRepository;
             _jwtService = jwtService;
+            _userManager = userManager;
         }
         [HttpGet("get-user-profile")]
         [Authorize]
@@ -59,11 +65,12 @@ namespace CRMS_Project.WebApi.Controllers
             var result = await _authRepository.LoginAsync(loginRequest);
             if (!result.Succeeded)
             {
-                return Unauthorized(new { success = false, message = "Sign in failed. Invalid email or password." });
+                return BadRequest(new { success = false, message = "Sign in failed. Invalid email or password." });
             }
             var token = await _jwtService.GenerateJWTTokenAsync(loginRequest.Email);
             var role = await _authRepository.GetUserRole(loginRequest.Email);
-            return Ok(new { success = true, message = "Sign in successful.", data = new { token,role } });
+            var user = await _userManager.FindByEmailAsync(loginRequest.Email);
+            return Ok(new { success = true, message = "Sign in successful.", data = new { token,role,user} });
         }
         [HttpGet("confirm-email")]
         public async Task<IActionResult> ConfirmEmail([FromQuery] Guid uid, [FromQuery] string token)
@@ -90,6 +97,18 @@ namespace CRMS_Project.WebApi.Controllers
             }
             return Ok(new { success = true, message = "Password changed successfully.", data = result });
         }
+        [HttpPut("update-user")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUser(UpdateUserRequest updateUser)
+        {
+            var result = await _authRepository.UpdateUserAsync(updateUser);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { success = false, message = "Failed to update details.", errors = result.Errors });
+            }
+            return Ok(new { success = true, message = "Profile updated successfully.", data = result });
+        }
+
         [HttpGet("get-all-company")]
         [Authorize]
         public async Task<IActionResult> GetAllCompany()

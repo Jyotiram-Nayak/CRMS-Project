@@ -12,7 +12,7 @@ namespace CRMS_Project.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    
+
     public class ApplicationController : ControllerBase
     {
         private readonly IApplicationRepository _applicationRepository;
@@ -21,7 +21,7 @@ namespace CRMS_Project.WebApi.Controllers
             _applicationRepository = applicationRepository;
         }
         [HttpGet("get-all-applications")]
-        [Authorize(Roles = UserRoles.Company+","+ UserRoles.University)]
+        [Authorize(Roles = UserRoles.Company + "," + UserRoles.University)]
         public async Task<IActionResult> GetApplications()
         {
             var result = _applicationRepository.GetAllApplicationsAsync();
@@ -32,7 +32,7 @@ namespace CRMS_Project.WebApi.Controllers
             return Ok(new { success = true, message = "Applications fetched successfully...", data = result });
         }
         [HttpGet("get-application-details/{id}")]
-        [Authorize(Roles = UserRoles.Company+","+ UserRoles.University)]
+        [Authorize(Roles = UserRoles.Company + "," + UserRoles.University)]
         public async Task<IActionResult> GetApplicationDetails(Guid id)
         {
             var result = _applicationRepository.GetApplicationByIdAsync(id);
@@ -50,6 +50,10 @@ namespace CRMS_Project.WebApi.Controllers
             if (result == 0)
             {
                 return BadRequest(new { success = false, message = "Failed to add Application." });
+            };
+            if (result == 1)
+            {
+                return BadRequest(new { success = false, message = "Already applied." });
             };
             return Ok(new { success = true, message = "Application added successfully..." });
         }
@@ -85,6 +89,17 @@ namespace CRMS_Project.WebApi.Controllers
                 return BadRequest(new { success = false, message = "Failed to reject application." });
             };
             return Ok(new { success = true, message = "Application rejected successfully." });
+        }
+        [HttpGet("get-approved-universitys")]
+        [Authorize(Roles = UserRoles.Company)]
+        public async Task<IActionResult> GetAllApprovedUniversity(Guid applicationId)
+        {
+            var result = await _applicationRepository.GetAllApprovedUniversity();
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "Failed to fetched university."});
+            };
+            return Ok(new { success = true, message = "University fetched successfully.", data = result });
         }
     }
 }

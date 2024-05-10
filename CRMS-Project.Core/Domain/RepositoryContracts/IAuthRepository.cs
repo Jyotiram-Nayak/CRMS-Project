@@ -19,5 +19,6 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<AuthenticationResponse> GetUserByIdAsunc(Guid? userId);
         Task<List<AuthenticationResponse>> GetAllUserByRole(string role);
         Task<string> GetUserRole(string userEmail);
+        Task<IdentityResult> UpdateUserAsync(UpdateUserRequest updateUser);
     }
 }

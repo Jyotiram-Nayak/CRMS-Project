@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CRMS_Project.Core.DTO.Request
 {
-    public class StudentRequest
+    public class UpdateStudentRequest
     {
         [Required(ErrorMessage = "First name is required")]
         public string FirstName { get; set; }
@@ -22,9 +22,8 @@ namespace CRMS_Project.Core.DTO.Request
         [Required]
         public string PhoneNumber { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Password is required")]
         [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
+        public string? Password { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Roll number is required")]
         public string RollNo { get; set; }
@@ -33,7 +32,6 @@ namespace CRMS_Project.Core.DTO.Request
         public DateTime? Dob { get; set; }
         public string? Gender { get; set; }
         public string? MaritalStatus { get; set; }
-        [Required(ErrorMessage ="Course is required")]
         public string Course { get; set; }
 
         [Required(ErrorMessage = "Address is required")]

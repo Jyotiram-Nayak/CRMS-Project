@@ -26,8 +26,8 @@ namespace CRMS_Project.Infrastructure.DbContext
                     });
                 }
             }
-            var firstName = "";
-            var lastName = "";
+            var firstName = "Admin";
+            var lastName = "Admin";
             var email = "admin@gmail.com";
             var password = "Admin@123";
             if (userManager.FindByEmailAsync(email).Result == null)
@@ -42,7 +42,7 @@ namespace CRMS_Project.Infrastructure.DbContext
                     Email = email,
                     EmailConfirmed = true,
                     Address = "...",
-                    PhoneNumber = "...",
+                    PhoneNumber = "9898665577",
                     City = "...",
                     State = "...",
                     Website = "...",

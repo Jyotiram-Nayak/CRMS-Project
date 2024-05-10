@@ -3,9 +3,11 @@ using CRMS_Project.Core.Domain.RepositoryContracts;
 using CRMS_Project.Core.DTO;
 using CRMS_Project.Core.DTO.Request;
 using CRMS_Project.Core.DTO.Response;
+using CRMS_Project.Core.Enums;
 using CRMS_Project.Core.ServiceContracts;
 using CRMS_Project.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -33,13 +35,60 @@ namespace CRMS_Project.Infrastructure.Repositories
             _context = context;
             _userService = userService;
         }
-        public async Task<List<StudentResponse>> GetAllStudentsAsync()
+        public async Task<List<StudentResponse>> GetAllStudentsAsync(FilterStudentRequest? filterStudent)
+        {
+            var universityId = _userService.GetUserId();
+            var query = from user in _userManager.Users
+                        join student in _context.Students
+                        on user.Id equals student.UserId
+                        where user.UniversityId == universityId && user.Role == "student"
+                        orderby user.CreateOn descending
+                        select new StudentResponse
+                        {
+                            UserId = user.Id,
+                            UniversityId = user.UniversityId,
+                            FirstName = user.FirstName,
+                            LastName = user.LastName,
+                            IsApproved = user.IsApproved,
+                            Address = user.Address,
+                            City = user.City,
+                            State = user.State,
+                            Email = user.Email,
+                            PhoneNumber = user.PhoneNumber,
+                            CreateOn = user.CreateOn,
+                            Role = user.Role,
+                            Course = user.Course,
+                            StudentId = student.StudentId,
+                            RollNo = student.RollNo,
+                            Dob = student.Dob,
+                            Gender = student.Gender,
+                            MaritalStatus = student.MaritalStatus,
+                            JoiningDate = student.JoiningDate,
+                            GraduationDate = student.GraduationDate,
+                            IsSelected = student.IsSelected
+                        };
+            if (Enum.TryParse(filterStudent.Course, out StudentCourse course))
+            {
+                query = query.Where(student => student.Course == (StudentCourse)course);
+            }
+
+            if (filterStudent.IsSelected != null)
+            {
+                var selected = filterStudent.IsSelected == "true" ? true : false;
+                query = query.Where(student => student.IsSelected == selected);
+            }
+
+            // Execute query and return the result
+            var students = await query.OrderByDescending(user => user.CreateOn).ToListAsync();
+            return students;
+        }
+        public async Task<StudentResponse> GetStudentByIdAsync(Guid userId)
         {
             var universityId = _userService.GetUserId();
             var students = await (from user in _userManager.Users
                                   join student in _context.Students
                                   on user.Id equals student.UserId
-                                  where user.UniversityId == universityId && user.Role == "student"
+                                  where user.UniversityId == universityId && user.Role == "student" && user.Id == userId
                                   select new StudentResponse
                                   {
                                       UserId = user.Id,
@@ -48,49 +97,38 @@ namespace CRMS_Project.Infrastructure.Repositories
                                       LastName = user.LastName,
                                       IsApproved = user.IsApproved,
                                       Address = user.Address,
-                                      Email = user.Email,
+                                      City = user.City,
+                                      State = user.State,
+                                      Email = user.Email ?? "",
+                                      PhoneNumber = user.PhoneNumber,
                                       CreateOn = user.CreateOn,
                                       Role = user.Role,
+                                      Course = user.Course,
                                       StudentId = student.StudentId,
                                       RollNo = student.RollNo,
                                       Dob = student.Dob,
                                       Gender = student.Gender,
                                       MaritalStatus = student.MaritalStatus,
                                       JoiningDate = student.JoiningDate,
-                                      GraduationDate = student.GraduationDate
-                                  }).ToListAsync();
-            return students;
-        }
-        public async Task<StudentResponse> GetStudentByIdAsync(Guid userId)
-        {
-            var universityId = _userService.GetUserId();
-            var students = await (from user in _userManager.Users
-                         join student in _context.Students
-                         on user.Id equals student.UserId
-                         where user.UniversityId == universityId && user.Role == "student" && user.Id == userId
-                         select new StudentResponse
-                         {
-                             UserId = user.Id,
-                             UniversityId = user.UniversityId,
-                             FirstName = user.FirstName,
-                             LastName = user.LastName,
-                             IsApproved = user.IsApproved,
-                             Address = user.Address,
-                             Email = user.Email ?? "",
-                             CreateOn = user.CreateOn,
-                             Role = user.Role,
-                             StudentId = student.StudentId,
-                             RollNo = student.RollNo,
-                             Dob = student.Dob,
-                             Gender = student.Gender,
-                             MaritalStatus = student.MaritalStatus,
-                             JoiningDate = student.JoiningDate,
-                             GraduationDate = student.GraduationDate
-                         }).FirstOrDefaultAsync();
+                                      GraduationDate = student.GraduationDate,
+                                      IsSelected = student.IsSelected
+                                  }).FirstOrDefaultAsync();
             return students;
         }
         public async Task<IdentityResult> AddStudent(StudentRequest studentRequest)
         {
+            if (!Enum.TryParse(typeof(GenderOptions), studentRequest.Gender.ToString(), out var gender))
+            {
+                return null;
+            }
+            if (!Enum.TryParse(typeof(MaritalOptions), studentRequest.MaritalStatus.ToString(), out var IsMarried))
+            {
+                return null;
+            }
+            if (!Enum.TryParse(typeof(StudentCourse), studentRequest.Course.ToString(), out var course))
+            {
+                return null;
+            }
             ApplicationUser newUser = new ApplicationUser
             {
                 //Id = Guid.NewGuid(),
@@ -99,10 +137,14 @@ namespace CRMS_Project.Infrastructure.Repositories
                 LastName = studentRequest.LastName,
                 IsApproved = true,
                 Address = studentRequest.Address,
+                PhoneNumber = studentRequest.PhoneNumber,
+                City = studentRequest.City,
+                State = studentRequest.State,
                 Email = studentRequest.Email,
                 UserName = studentRequest.Email,
                 CreateOn = DateTime.Now,
                 Role = "student",
+                Course = (StudentCourse)course,
             };
             IdentityResult result = await _userManager.CreateAsync(newUser, studentRequest.Password);
             if (!result.Succeeded)
@@ -118,35 +160,59 @@ namespace CRMS_Project.Infrastructure.Repositories
                 UserId = newUser.Id,
                 RollNo = studentRequest.RollNo,
                 Dob = studentRequest.Dob,
-                Gender = studentRequest.Gender,
-                MaritalStatus = studentRequest.MaritalStatus,
+                Gender = (GenderOptions)gender,
+                MaritalStatus = (MaritalOptions)IsMarried,
                 JoiningDate = studentRequest.JoiningDate,
                 GraduationDate = studentRequest.GraduationDate,
+                IsSelected = false,
             };
             _context.Students.Add(student);
             await _context.SaveChangesAsync();
             return result;
         }
-        public async Task<IdentityResult> UpdateStudentAsync(Guid studentId, StudentRequest studentRequest)
+        public async Task<IdentityResult> UpdateStudentAsync(Guid studentId, UpdateStudentRequest studentRequest)
         {
+            if (!Enum.TryParse(typeof(GenderOptions), studentRequest.Gender.ToString(), out var gender))
+            {
+                return null;
+            }
+            if (!Enum.TryParse(typeof(MaritalOptions), studentRequest.MaritalStatus.ToString(), out var IsMarried))
+            {
+                return null;
+            }
+            if (!Enum.TryParse(typeof(StudentCourse), studentRequest.Course.ToString(), out var course))
+            {
+                return null;
+            }
             var student = await _userManager.FindByIdAsync(studentId.ToString());
             if (student == null) { return IdentityResult.Failed(new IdentityError { Description = $"Student with ID '{studentId}' not found." }); }
             student.FirstName = studentRequest.FirstName;
             student.LastName = studentRequest.LastName;
             student.IsApproved = true;
+            if (!string.IsNullOrEmpty(studentRequest.Password))
+            {
+                var newPasswordHash = _userManager.PasswordHasher.HashPassword(student, studentRequest.Password);
+                student.PasswordHash = newPasswordHash;
+            }
             student.Address = studentRequest.Address;
+            student.City = studentRequest.City;
+            student.State = studentRequest.State;
             student.Email = studentRequest.Email;
+            student.PhoneNumber = studentRequest.PhoneNumber;
             student.UserName = studentRequest.Email;
             student.UpdateOn = DateTime.Now;
+            student.Course = (StudentCourse)course;
 
             var updateResult = await _userManager.UpdateAsync(student);
+            await _context.SaveChangesAsync();
             if (!updateResult.Succeeded) { return IdentityResult.Failed(new IdentityError { Description = $"Failed to update student with Name '{student.FirstName}'." }); }
             var stdDetails = await _context.Students.Where(s => s.UserId == student.Id).FirstOrDefaultAsync();
             if (stdDetails == null) { return IdentityResult.Failed(new IdentityError { Description = $"Student details not found for user ID '{student.Id}'." }); }
+            _context.Entry(stdDetails).State = EntityState.Modified;
             stdDetails.RollNo = studentRequest.RollNo;
             stdDetails.Dob = studentRequest.Dob;
-            stdDetails.Gender = studentRequest.Gender;
-            stdDetails.MaritalStatus = studentRequest.MaritalStatus;
+            stdDetails.Gender = (GenderOptions)gender;
+            stdDetails.MaritalStatus = (MaritalOptions)IsMarried;
             stdDetails.JoiningDate = studentRequest.JoiningDate;
             stdDetails.GraduationDate = studentRequest.GraduationDate;
 

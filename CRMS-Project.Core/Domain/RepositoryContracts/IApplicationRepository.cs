@@ -15,5 +15,6 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<int> AddApplication(Guid universityId);
         Task<int> DeleteApplicationAsync(Guid id);
         Task<bool> ApproveOrRejectApplicationAsync(Guid applicationId, ApplicationStatus status);
+        Task<List<ApprovedUniversityResponse>> GetAllApprovedUniversity();
     }
 }

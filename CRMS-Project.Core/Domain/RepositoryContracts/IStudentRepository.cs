@@ -6,10 +6,10 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
 {
     public interface IStudentRepository
     {
-        Task<List<StudentResponse>> GetAllStudentsAsync();
+        Task<List<StudentResponse>> GetAllStudentsAsync(FilterStudentRequest filterStudent);
         Task<StudentResponse> GetStudentByIdAsync(Guid userId);
         Task<IdentityResult> AddStudent(StudentRequest studentRequest);
         Task<IdentityResult> DeleteStudent(Guid id);
-        Task<IdentityResult> UpdateStudentAsync(Guid studentId, StudentRequest studentRequest);
+        Task<IdentityResult> UpdateStudentAsync(Guid studentId, UpdateStudentRequest studentRequest);
     }
 }

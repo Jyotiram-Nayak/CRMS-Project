@@ -18,7 +18,9 @@ namespace CRMS_Project.Core.DTO.Response
         public DateTime? Dob { get; set; }
         public GenderOptions? Gender { get; set; }
         public MaritalOptions? MaritalStatus { get; set; }
+        public StudentCourse? Course { get; set; }
         public DateTime JoiningDate { get; set; }
         public DateTime? GraduationDate { get; set; }
+        public  bool? IsSelected { get; set; }
     }
 }

@@ -75,6 +75,8 @@ namespace CRMS_Project.Core.Services
                 Body = emailMessage.Body,
                 From = new MailAddress("no-replay@LibraryManagement.com", "Head of the department"),
                 IsBodyHtml = true
+                //From = new MailAddress(_configuration.GetSection("EmailSettings.SenderEmail").Value ?? "", _configuration.GetSection("EmailSettings.SenderName").Value ?? ""),
+                //IsBodyHtml = Convert.ToBoolean(_configuration.GetSection("EmailSettings.IsBodyHTML").Value),
             };
             //// for multiple email sending
             foreach (var toEmail in emailMessage.ToEmails)
@@ -83,6 +85,7 @@ namespace CRMS_Project.Core.Services
             }
             //mailMessage.To.Add(emailMessage.ToEmails);
             NetworkCredential networkCredential = new NetworkCredential("2f20c76a19b259", "1898ebb259012c");
+            //NetworkCredential networkCredential = new NetworkCredential(_configuration.GetSection("EmailSettings.SmtpUsername").Value, _configuration.GetSection("EmailSettings.SmtpPassword").Value);
 
             SmtpClient smtpClient = new SmtpClient
             {
@@ -90,6 +93,10 @@ namespace CRMS_Project.Core.Services
                 Port = 587,
                 EnableSsl = true,
                 Credentials = networkCredential
+                //Host = _configuration.GetSection("EmailSettings.SmtpServer").Value ?? "",
+                //Port = Convert.ToInt32(_configuration.GetSection("EmailSettings.SmtpPort").Value),
+                //EnableSsl = Convert.ToBoolean(_configuration.GetSection("EmailSettings.SmtpPort").Value),
+                //Credentials = networkCredential
             };
             try
             {

@@ -30,6 +30,7 @@ namespace CRMS_Project.Core.Domain.Identity
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime? GraduationDate { get; set; }
+        public bool? IsSelected { get; set; }
         public ApplicationUser ApplicationUser { get; set; }
     }
     

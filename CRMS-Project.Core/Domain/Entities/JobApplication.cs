@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using CRMS_Project.Core.Enums;
 
 namespace CRMS_Project.Core.Domain.Entities
 {
@@ -26,9 +27,13 @@ namespace CRMS_Project.Core.Domain.Entities
         public DateTime AppliedDate { get; set; }
         public DateTime? InterviewDate { get; set; }
         [Required]
-        public string Status { get; set; }
+        public SelectionStatus isSelected { get; set; }
         public string Resume { get; set; }
-        public string AdditionalInformation { get; set; }
+        public string? AssessmentLink { get; set; } 
+        public bool? AssessmentCompleted { get; set; } 
+        public DateTime? AssessmentCompletionDate { get; set; } 
+        public string? AssessmentScore { get; set; } 
+        public string? AssessmentFeedback { get; set; } 
         [Required]
         public DateTime CreateOn { get; set; }
         public DateTime? UpdateOn { get; set; }

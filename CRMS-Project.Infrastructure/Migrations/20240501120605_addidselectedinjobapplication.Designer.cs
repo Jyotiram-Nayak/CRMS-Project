@@ -4,6 +4,7 @@ using CRMS_Project.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CRMS_Project.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240501120605_addidselectedinjobapplication")]
+    partial class addidselectedinjobapplication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,21 +33,6 @@ namespace CRMS_Project.Infrastructure.Migrations
 
                     b.Property<DateTime>("AppliedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool?>("AssessmentCompleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("AssessmentCompletionDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("AssessmentFeedback")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AssessmentLink")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("AssessmentScore")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
@@ -99,10 +87,6 @@ namespace CRMS_Project.Infrastructure.Migrations
                     b.Property<Guid>("CompanyId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Courses")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreateOn")
                         .HasColumnType("datetime2");
 
@@ -143,6 +127,33 @@ namespace CRMS_Project.Infrastructure.Migrations
                     b.HasIndex("UniversityId");
 
                     b.ToTable("JobPostings");
+                });
+
+            modelBuilder.Entity("CRMS_Project.Core.Domain.Entities.PlacementApplication", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("DateSubmitted")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UniversityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("UniversityId");
+
+                    b.ToTable("PlacementApplications");
                 });
 
             modelBuilder.Entity("CRMS_Project.Core.Domain.Identity.ApplicationRole", b =>
@@ -196,9 +207,6 @@ namespace CRMS_Project.Infrastructure.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("Course")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreateOn")
                         .HasColumnType("datetime2");
@@ -301,9 +309,6 @@ namespace CRMS_Project.Infrastructure.Migrations
 
                     b.Property<DateTime?>("GraduationDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool?>("IsSelected")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("JoiningDate")
                         .HasColumnType("datetime2");
@@ -465,6 +470,25 @@ namespace CRMS_Project.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("CRMS_Project.Core.Domain.Entities.JobPosting", b =>
+                {
+                    b.HasOne("CRMS_Project.Core.Domain.Identity.ApplicationUser", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CRMS_Project.Core.Domain.Identity.ApplicationUser", "University")
+                        .WithMany()
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+
+                    b.Navigation("University");
+                });
+
+            modelBuilder.Entity("CRMS_Project.Core.Domain.Entities.PlacementApplication", b =>
                 {
                     b.HasOne("CRMS_Project.Core.Domain.Identity.ApplicationUser", "Company")
                         .WithMany()

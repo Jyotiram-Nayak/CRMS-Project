@@ -15,8 +15,11 @@
 
   <ItemGroup>
     <Compile Remove="Domain\Entities\Company.cs" />
+    <Compile Remove="Domain\Entities\PlacementApplication.cs" />
     <Compile Remove="Domain\Entities\University.cs" />
     <Compile Remove="Domain\Entities\UniversityCompany.cs" />
+    <Compile Remove="Domain\RepositoryContracts\IApplicationRepository.cs" />
+    <Compile Remove="DTO\Response\ApplicationResponse.cs" />
   </ItemGroup>
 
   <ItemGroup>
