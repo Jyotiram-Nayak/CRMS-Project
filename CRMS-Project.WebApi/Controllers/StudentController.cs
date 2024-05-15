@@ -1,6 +1,8 @@
-﻿using CRMS_Project.Core.Domain.RepositoryContracts;
+﻿using CRMS_Project.Core.Domain.Identity;
+using CRMS_Project.Core.Domain.RepositoryContracts;
 using CRMS_Project.Core.DTO;
 using CRMS_Project.Core.DTO.Request;
+using ExcelDataReader;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -52,7 +54,7 @@ namespace CRMS_Project.WebApi.Controllers
             var result = await _studentRepository.UpdateStudentAsync(studentId, studentRequest);
             if (!result.Succeeded)
             {
-                return BadRequest(new { success = false, message = "Failed to update Student.", data = result });
+                return BadRequest(new { success = false, message = "Failed to update Student." + result.Errors.Select(e => e.Description) });
             };
             return Ok(new { success = true, message = "Student updated successfully...", data = result });
         }
@@ -66,6 +68,15 @@ namespace CRMS_Project.WebApi.Controllers
             };
             return Ok(new { success = true, message = "Student deleted successfully...", data = result });
         }
-
+        [HttpPost("import-excel-file")]
+        public async Task<IActionResult> ImportExcelFile([FromForm]string fileUrl)
+        {
+            var result = await _studentRepository.ImportExcelFile(fileUrl);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { success = false, message = "Failed to import, " + string.Join(", ", result.Errors.Select(e => e.Description))});
+            };
+            return Ok(new { success = true, message = "File import successfully..."});
+        }
     }
 }

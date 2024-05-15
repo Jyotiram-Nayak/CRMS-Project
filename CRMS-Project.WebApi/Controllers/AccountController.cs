@@ -18,14 +18,17 @@ namespace CRMS_Project.WebApi.Controllers
         private readonly IAuthRepository _authRepository;
         private readonly IJwtService _jwtService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserService _userService;
 
         public AccountController(IAuthRepository authRepository,
             IJwtService jwtService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            IUserService userService)
         {
             _authRepository = authRepository;
             _jwtService = jwtService;
             _userManager = userManager;
+            _userService = userService;
         }
         [HttpGet("get-user-profile")]
         [Authorize]
@@ -55,7 +58,10 @@ namespace CRMS_Project.WebApi.Controllers
             var result =await _authRepository.RegisterUserAsync(registerRequest);
             if (!result.Succeeded)
             {
-                return BadRequest(new { success = false, message = "Failed to register user.", errors = result.Errors });
+                var errorMessage = "Failed to register user. Errors: " + string.Join(", ", result.Errors.Select(e => e.Description));
+                // Return a BadRequest with the custom error message
+                return BadRequest(new { success = false, message = errorMessage });
+                //return BadRequest(new { success = false, message = "Failed to register user.", errors = result.Errors });
             };
             return Ok(new { success = true, message = "Register User successfully...", data = result });
         }
@@ -68,7 +74,8 @@ namespace CRMS_Project.WebApi.Controllers
                 return BadRequest(new { success = false, message = "Sign in failed. Invalid email or password." });
             }
             var token = await _jwtService.GenerateJWTTokenAsync(loginRequest.Email);
-            var role = await _authRepository.GetUserRole(loginRequest.Email);
+            //var role = await _authRepository.GetUserRole(loginRequest.Email);
+            var role = _userService.GetUserRole();
             var user = await _userManager.FindByEmailAsync(loginRequest.Email);
             return Ok(new { success = true, message = "Sign in successful.", data = new { token,role,user} });
         }
@@ -93,10 +100,22 @@ namespace CRMS_Project.WebApi.Controllers
             var result = await _authRepository.ChangePasswordAsync(changePassword);
             if (!result.Succeeded)
             {
-                return BadRequest(new { success = false, message = "Failed to change password." , errors = result.Errors });
+                return BadRequest(new { success = false, message = "Failed to change password" + string.Join(", ", result.Errors.Select(e => e.Description))});
             }
             return Ok(new { success = true, message = "Password changed successfully.", data = result });
         }
+        [HttpPut("forgot-password/{email}")]
+        [Authorize]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var result = await _authRepository.SendForgotPasswordEmail(email);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { success = false, message = "Failed to forgot password" + string.Join(", ", result.Errors.Select(e => e.Description)) });
+            }
+            return Ok(new { success = true, message = "Email send successfully.", data = result });
+        }
+
         [HttpPut("update-user")]
         [Authorize]
         public async Task<IActionResult> UpdateUser(UpdateUserRequest updateUser)
@@ -104,7 +123,7 @@ namespace CRMS_Project.WebApi.Controllers
             var result = await _authRepository.UpdateUserAsync(updateUser);
             if (!result.Succeeded)
             {
-                return BadRequest(new { success = false, message = "Failed to update details.", errors = result.Errors });
+                return BadRequest(new { success = false, message = "Failed to update details" + string.Join(", ", result.Errors.Select(e => e.Description)) });
             }
             return Ok(new { success = true, message = "Profile updated successfully.", data = result });
         }
@@ -116,7 +135,7 @@ namespace CRMS_Project.WebApi.Controllers
             var result = await _authRepository.GetAllUserByRole(UserRoles.Company.ToLower());
             if (result == null)
             {
-                return BadRequest(new { success = false, message = "User not found." });
+                return BadRequest(new { success = false, message = "Company not found." });
             }
             return Ok(new { success = true, message = "User details fetched successfully.", data = result });
         }
@@ -127,7 +146,7 @@ namespace CRMS_Project.WebApi.Controllers
             var result = await _authRepository.GetAllUserByRole(UserRoles.University.ToLower());
             if (result == null)
             {
-                return BadRequest(new { success = false, message = "User not found." });
+                return BadRequest(new { success = false, message = "University not found." });
             }
             return Ok(new { success = true, message = "User details fetched successfully.", data = result });
         }

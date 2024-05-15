@@ -52,6 +52,29 @@ namespace CRMS_Project.Core.Services
                 await SendEmailAsync(emailMessage);
             }
         }
+        public async Task SendForgotEmailAsync(ApplicationUser user)
+        {
+            //var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            if (!string.IsNullOrEmpty(token))
+            {
+                //await SendEmailConfirmationAsync(user, token);
+                string appDomain = _configuration.GetSection("Application:AppDomain").Value ?? "";
+                string confirmLink = _configuration.GetSection("Application:ForgotPassword").Value ?? "";
+                EmailMessage emailMessage = new EmailMessage
+                {
+                    ToEmails = new List<string>() { user.Email },
+                    PlaceHolders = new List<KeyValuePair<string, string>>()
+                    {
+                        new KeyValuePair<string, string>("{{UserName}}",user.Email),
+                        new KeyValuePair<string, string>("{{Link}}",string.Format(appDomain+confirmLink,user.Id,token))
+                    }
+                };
+                emailMessage.Subject = UpdatePlaceHolders("Hellow {{UserName}}! reset your password", emailMessage.PlaceHolders);
+                emailMessage.Body = UpdatePlaceHolders(GetEmailBody("ForgotPassword"), emailMessage.PlaceHolders);
+                await SendEmailAsync(emailMessage);
+            }
+        }
         /// <summary>
         /// Get email body from templates.
         /// </summary>

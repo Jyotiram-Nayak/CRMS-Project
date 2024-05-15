@@ -15,9 +15,9 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<int> CreateJobAsync(JobPostingRequest jobPosting);
         Task<JobPostingResponse> GetJobByIdAsync(Guid jobId);
         Task<List<JobPostingResponse>> GetAllJobsAsync();
-        Task<int> UpdateJobAsync(Guid jobId, JobPostingRequest jobPosting);
-        Task<int> DeleteJobAsync(Guid jobId);
-        Task<bool> ApproveOrRejectApplicationAsync(Guid jobId, ApplicationStatus status);
+        Task<(int result, string errorMessage)> UpdateJobAsync(Guid jobId, JobPostingRequest jobPosting);
+        Task<(int result, string errorMessage)> DeleteJobAsync(Guid jobId);
+        Task<(int result, string errorMessage)> ApproveOrRejectApplicationAsync(Guid jobId, ApplicationStatus status);
         Task<List<JobPostingResponse>> GetAllApprovedJobByUniversityId(Guid universityId);
     }
 }

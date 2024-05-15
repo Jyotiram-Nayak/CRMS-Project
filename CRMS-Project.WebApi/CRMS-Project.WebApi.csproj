@@ -42,8 +42,4 @@
     <None Include="wwwroot\EmailTemplate\EmailConfirmation.html" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\ProfileImage\" />
-  </ItemGroup>
-
 </Project>

@@ -108,26 +108,28 @@ namespace CRMS_Project.Infrastructure.Repositories
             }).FirstOrDefaultAsync();
             return jobPlacement;
         }
-        public async Task<int> DeleteJobAsync(Guid jobId)
+        public async Task<(int result, string errorMessage)> DeleteJobAsync(Guid jobId)
         {
             var jobPlacement = await _context.JobPostings.Where(x => x.CompanyId == _userService.GetUserId() && x.JobId == jobId).FirstOrDefaultAsync();
-            if (jobPlacement == null) return 0;
+            if (jobPlacement == null) return (0,"Invalid request");
             _context.JobPostings.Remove(jobPlacement);
-            return await _context.SaveChangesAsync();
+            var result = await _context.SaveChangesAsync();
+            return (result, result > 0 ? "" : "Error occurred while deleting the job.");
         }
-        public async Task<int> UpdateJobAsync(Guid jobId, JobPostingRequest jobPosting)
+        public async Task<(int result, string errorMessage)> UpdateJobAsync(Guid jobId, JobPostingRequest jobPosting)
         {
             var jobPlacement = await _context.JobPostings.Where(x => x.CompanyId == _userService.GetUserId() && x.JobId == jobId).FirstOrDefaultAsync();
-            if (jobPlacement == null) { return 0; }
+            if (jobPlacement == null) { return (0, "Invalid request"); }
             jobPlacement.UniversityId = jobPosting.UniversityId;
             jobPlacement.Title = jobPosting.Title;
             jobPlacement.Description = jobPosting.Description;
             jobPlacement.Deadline = jobPosting.Deadline;
             jobPlacement.Document = jobPosting.Document;
             jobPlacement.UpdateOn = DateTime.Now;
-            return await _context.SaveChangesAsync();
+            var result = await _context.SaveChangesAsync();
+            return (result, result > 0 ? "" : "Error occurred while updating the job.");
         }
-        public async Task<bool> ApproveOrRejectApplicationAsync(Guid jobId, ApplicationStatus status)
+        public async Task<(int result,string errorMessage)> ApproveOrRejectApplicationAsync(Guid jobId, ApplicationStatus status)
         {
             try
             {
@@ -135,11 +137,9 @@ namespace CRMS_Project.Infrastructure.Repositories
                 var universituId = _userService.GetUserId();
                 if (application == null && universituId != application?.UniversityId)
                 {
-                    return false;
+                    return (0,"Invalid request");
                 }
                 application.Status = status;
-                //if(status  == ApplicationStatus.Approved)
-                //    application.ApprovedDate = DateTime.Now;
                 if (status == ApplicationStatus.Approved)
                 {
                     application.ApprovedDate = DateTime.Now;
@@ -148,12 +148,12 @@ namespace CRMS_Project.Infrastructure.Repositories
                 {
                     application.RejectedDate = DateTime.Now;
                 }
-                await _context.SaveChangesAsync();
-                return true;
+                var result = await _context.SaveChangesAsync();
+                return (result, result > 0 ? "" : "Error occurred while saving the job application.");
             }
             catch (Exception ex)
             {
-                return false;
+                return (0, "Error occurred while saving the job application.");
             }
         }
 

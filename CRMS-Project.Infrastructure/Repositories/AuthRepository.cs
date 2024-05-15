@@ -37,6 +37,11 @@ namespace CRMS_Project.Infrastructure.Repositories
         }
         public async Task<IdentityResult> RegisterUserAsync(RegisterRequest user)
         {
+            var existingUser = await _userManager.FindByEmailAsync(user.Email);
+            if (existingUser != null)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = "Email is already registered." });
+            }
             ApplicationUser newUser = new ApplicationUser
             {
                 FirstName = user.FirstName,
@@ -92,7 +97,7 @@ namespace CRMS_Project.Infrastructure.Repositories
             var user = await _userManager.FindByIdAsync(uid.ToString());
             if (user == null)
             {
-                return null;
+                return IdentityResult.Failed(new IdentityError { Description = "User not found." });
             }
             return await _userManager.ChangePasswordAsync(user, changePassword.CurrentPassword, changePassword.NewPassword);
         }
@@ -148,27 +153,12 @@ namespace CRMS_Project.Infrastructure.Repositories
 
             return user;
         }
-        public async Task<string> GetUserRole(string userEmail)
-        {
-            var user = await _userManager.FindByEmailAsync(userEmail);
-            if (user == null)
-            {
-                throw new ApplicationException($"Unable to load user with Email '{userEmail}'.");
-            }
-            var roles = await _userManager.GetRolesAsync(user);
-            if (roles == null || roles.Count == 0)
-            {
-                throw new ApplicationException($"No roles found for user with Email '{userEmail}'.");
-            }
-            // Assuming the user has only one role for simplicity
-            return roles.FirstOrDefault();
-        }
         public async Task<IdentityResult> UpdateUserAsync(UpdateUserRequest updateUser)
         {
             var userId = _userService.GetUserId().ToString();
             // Find the user by userId
             var user = await _userManager.FindByIdAsync(userId);
-            
+
             if (user == null)
             {
                 return IdentityResult.Failed(new IdentityError { Description = $"User with ID '{userId}' not found." });
@@ -186,6 +176,20 @@ namespace CRMS_Project.Infrastructure.Repositories
             user.UpdateOn = DateTime.Now;
             // Call UserManager's UpdateAsync method to update the user
             return await _userManager.UpdateAsync(user);
+        }
+        public async Task<IdentityResult> SendForgotPasswordEmail(string email)
+        {
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+                if (user == null) { return IdentityResult.Failed(new IdentityError { Description = "User not found" }); }
+                await _emailService.SendForgotEmailAsync(user);
+                return IdentityResult.Success;
+            }
+            catch (Exception)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = "Failed to send forgot password email" });
+            }
         }
     }
 }

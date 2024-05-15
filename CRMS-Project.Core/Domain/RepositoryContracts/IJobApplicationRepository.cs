@@ -12,6 +12,6 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
     {
         Task<List<JobApplicationResponse>> GetAllJobApplicationAsync();
         Task<(int result, string errorMessage)> AddJobApplicationAsync(JobApplicationRequest jobApplication);
-        Task<int> JobAssessessmentAsync(Guid applicationId, JobAssessmentRequest jobAssessment);
+        Task<(int result, string errorMessage)> JobAssessessmentAsync(Guid applicationId, JobAssessmentRequest jobAssessment);
     }
 }

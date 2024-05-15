@@ -11,5 +11,6 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<IdentityResult> AddStudent(StudentRequest studentRequest);
         Task<IdentityResult> DeleteStudent(Guid id);
         Task<IdentityResult> UpdateStudentAsync(Guid studentId, UpdateStudentRequest studentRequest);
+        Task<IdentityResult> ImportExcelFile(string fileUrl);
     }
 }

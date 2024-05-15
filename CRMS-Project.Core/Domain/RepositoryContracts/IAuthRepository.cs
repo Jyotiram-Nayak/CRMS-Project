@@ -18,7 +18,7 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<IdentityResult> ChangePasswordAsync(ChangePasswordRequest changePassword);
         Task<AuthenticationResponse> GetUserByIdAsunc(Guid? userId);
         Task<List<AuthenticationResponse>> GetAllUserByRole(string role);
-        Task<string> GetUserRole(string userEmail);
         Task<IdentityResult> UpdateUserAsync(UpdateUserRequest updateUser);
+        Task<IdentityResult> SendForgotPasswordEmail(string email);
     }
 }

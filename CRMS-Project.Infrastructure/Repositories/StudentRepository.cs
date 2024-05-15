@@ -6,12 +6,14 @@ using CRMS_Project.Core.DTO.Response;
 using CRMS_Project.Core.Enums;
 using CRMS_Project.Core.ServiceContracts;
 using CRMS_Project.Infrastructure.DbContext;
+using ExcelDataReader;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
@@ -53,8 +55,8 @@ namespace CRMS_Project.Infrastructure.Repositories
                             Address = user.Address,
                             City = user.City,
                             State = user.State,
-                            Email = user.Email,
-                            PhoneNumber = user.PhoneNumber,
+                            Email = user.Email ?? "",
+                            PhoneNumber = user.PhoneNumber ?? "",
                             CreateOn = user.CreateOn,
                             Role = user.Role,
                             Course = user.Course,
@@ -100,7 +102,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                                       City = user.City,
                                       State = user.State,
                                       Email = user.Email ?? "",
-                                      PhoneNumber = user.PhoneNumber,
+                                      PhoneNumber = user.PhoneNumber ?? "",
                                       CreateOn = user.CreateOn,
                                       Role = user.Role,
                                       Course = user.Course,
@@ -232,6 +234,102 @@ namespace CRMS_Project.Infrastructure.Repositories
                 return result;
             }
             return IdentityResult.Failed(new IdentityError { Description = $"Student with ID '{id}' not found." });
+        }
+        public async Task<IdentityResult> ImportExcelFile(string fileUrl)
+        {
+            IdentityResult result = new IdentityResult();
+            try
+            {
+                //string tempFilePath = "temp.xlsx"; // Temporary file path on your server
+                string fileName = "temp.xlsx"; // Temporary file name
+                string rootPath = Directory.GetCurrentDirectory(); // Get the root directory path
+                string filePath = Path.Combine(rootPath,"wwwroot", fileName);
+                using (var client = new WebClient())
+                {
+                    await client.DownloadFileTaskAsync(new Uri(fileUrl), filePath);
+                }
+                using (var stream = System.IO.File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                //using (var stream = new StreamReader(tempFilePath, Encoding.UTF8))
+                {
+                    System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                    using (var reader = ExcelReaderFactory.CreateReader(stream))
+                    {
+                        do
+                        {
+                            reader.Read();
+                            while (reader.Read())
+                            {
+                                ApplicationUser newUser = new ApplicationUser
+                                {
+                                    Id = Guid.NewGuid(),
+                                    UniversityId = _userService.GetUserId(),
+                                    FirstName = reader.GetValue(1)?.ToString() ?? "",
+                                    LastName = reader.GetValue(2)?.ToString() ?? "",
+                                    Email = reader.GetValue(3)?.ToString() ?? "",
+                                    PhoneNumber = reader.GetValue(4)?.ToString() ?? "",
+                                    IsApproved = true,
+                                    Address = reader.GetValue(12)?.ToString() ?? "",
+                                    City = reader.GetValue(13)?.ToString() ?? "",
+                                    State = reader.GetValue(14)?.ToString() ?? "",
+                                    UserName = reader.GetValue(3)?.ToString() ?? "",
+                                    CreateOn = DateTime.Now,
+                                    Role = "student",
+                                };
+                                // parse course
+                                if (Enum.TryParse<StudentCourse>(reader.GetValue(11)?.ToString(), out var course))
+                                {
+                                    newUser.Course = course;
+                                }
+                                var password = reader.GetValue(5).ToString() ?? "";
+                                result = await _userManager.CreateAsync(newUser, password);
+                                if (!result.Succeeded)
+                                {
+                                    return result;
+                                }
+                                await _userManager.AddToRoleAsync(newUser, UserRoles.Student);
+                                await _emailService.SendEmailConfirmationAsync(newUser);
+
+                                var student = new Student
+                                {
+                                    StudentId = Guid.NewGuid(),
+                                    UserId = newUser.Id,
+                                    RollNo = reader.GetValue(7)?.ToString() ?? "",
+                                    IsSelected = false,
+                                };
+                                if (Enum.TryParse<GenderOptions>(reader.GetValue(9)?.ToString(), out var gender))
+                                {
+                                    student.Gender = gender;
+                                }
+                                if (Enum.TryParse<MaritalOptions>(reader.GetValue(10)?.ToString(), out var maritalStatus))
+                                {
+                                    student.MaritalStatus = maritalStatus;
+                                }
+                                if (DateTime.TryParse(reader.GetValue(8)?.ToString(), out var dob))
+                                {
+                                    student.Dob = dob;
+                                }
+                                if (DateTime.TryParse(reader.GetValue(15)?.ToString(), out var joiningDate))
+                                {
+                                    student.JoiningDate = joiningDate;
+                                }
+                                if (DateTime.TryParse(reader.GetValue(16)?.ToString(), out var graduationDate))
+                                {
+                                    student.GraduationDate = graduationDate;
+                                }
+                                _context.Students.Add(student);
+                                await _context.SaveChangesAsync();
+                            }
+                        } while (reader.NextResult());
+                    }
+                }
+                File.Delete(filePath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error importing Excel data: {ex.Message}");
+                result = IdentityResult.Failed(new IdentityError { Description = ex.Message });
+            }
+            return result;
         }
     }
 }

@@ -61,18 +61,6 @@ namespace CRMS_Project.Infrastructure.DbContext
                 .WithMany()
                 .HasForeignKey(ja => ja.UniversityId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            //modelBuilder.Entity<PlacementApplication>()
-            //    .HasOne(ja => ja.Company)
-            //    .WithMany()
-            //    .HasForeignKey(ja => ja.CompanyId)
-            //    .OnDelete(DeleteBehavior.Restrict);
-            
-            //modelBuilder.Entity<PlacementApplication>()
-            //    .HasOne(ja => ja.University)
-            //    .WithMany()
-            //    .HasForeignKey(ja => ja.UniversityId)
-            //    .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

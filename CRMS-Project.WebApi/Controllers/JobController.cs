@@ -10,7 +10,7 @@ namespace CRMS_Project.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-   
+
     public class JobController : ControllerBase
     {
         private readonly IJobRepository _jobRepository;
@@ -20,7 +20,7 @@ namespace CRMS_Project.WebApi.Controllers
             _jobRepository = jobRepository;
         }
         [HttpGet("get-all-job")]
-        [Authorize(Roles = UserRoles.Company+","+UserRoles.University)]
+        [Authorize(Roles = UserRoles.Company + "," + UserRoles.University)]
         public async Task<IActionResult> GetAllJobPosting()
         {
             var result = await _jobRepository.GetAllJobsAsync();
@@ -67,22 +67,22 @@ namespace CRMS_Project.WebApi.Controllers
         [Authorize(Roles = UserRoles.Company)]
         public async Task<IActionResult> DeleteJob(Guid jobId)
         {
-            var result = await _jobRepository.DeleteJobAsync(jobId);
+            (int result, string errorMessage) = await _jobRepository.DeleteJobAsync(jobId);
             if (result == 0)
             {
-                return BadRequest(new { success = false, message = "Failed to delete Job.", data = result });
+                return BadRequest(new { success = false, message = "Failed to delete Job." + errorMessage });
             };
             return Ok(new { success = true, message = "Job deleted successfully...", data = result });
         }
 
         [HttpPut("update-job/{jobId}")]
         [Authorize(Roles = UserRoles.Company)]
-        public async Task<IActionResult> UpdateJob([FromRoute]Guid jobId,JobPostingRequest jobPosting)
+        public async Task<IActionResult> UpdateJob([FromRoute] Guid jobId, JobPostingRequest jobPosting)
         {
-            var result = await _jobRepository.UpdateJobAsync(jobId, jobPosting);
+            (int result, string errorMessage) = await _jobRepository.UpdateJobAsync(jobId, jobPosting);
             if (result == 0)
             {
-                return BadRequest(new { success = false, message = "Failed to update Job.", data = result });
+                return BadRequest(new { success = false, message = "Failed to update Job." + errorMessage });
             };
             return Ok(new { success = true, message = "Job updated successfully...", data = result });
         }
@@ -90,10 +90,10 @@ namespace CRMS_Project.WebApi.Controllers
         [Authorize(Roles = UserRoles.University)]
         public async Task<IActionResult> ApprovePlacementApplication(Guid jobId)
         {
-            bool result = await _jobRepository.ApproveOrRejectApplicationAsync(jobId, ApplicationStatus.Approved);
-            if (!result)
+            (int result, string errorMessage) = await _jobRepository.ApproveOrRejectApplicationAsync(jobId, ApplicationStatus.Approved);
+            if (result == 0)
             {
-                return BadRequest(new { success = false, message = "Failed to approve application." });
+                return BadRequest(new { success = false, message = "Failed to approve application." + errorMessage });
             };
             return Ok(new { success = true, message = "Application approved successfully." });
         }
@@ -101,10 +101,10 @@ namespace CRMS_Project.WebApi.Controllers
         [Authorize(Roles = UserRoles.University)]
         public async Task<IActionResult> RejectPlacementApplication(Guid jobId)
         {
-            bool result = await _jobRepository.ApproveOrRejectApplicationAsync(jobId, ApplicationStatus.Rejected);
-            if (!result)
+            (int result, string errorMessage) = await _jobRepository.ApproveOrRejectApplicationAsync(jobId, ApplicationStatus.Rejected);
+            if (result == 0)
             {
-                return BadRequest(new { success = false, message = "Failed to reject application." });
+                return BadRequest(new { success = false, message = "Failed to reject application. " + errorMessage });
             };
             return Ok(new { success = true, message = "Application rejected successfully." });
         }

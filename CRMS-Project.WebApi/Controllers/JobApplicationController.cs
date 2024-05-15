@@ -44,10 +44,10 @@ namespace CRMS_Project.WebApi.Controllers
         [Authorize(Roles =UserRoles.Company)]
         public async Task<IActionResult> JobAssessment(Guid assessmentId,[FromForm]JobAssessmentRequest jobAssessment)
         {
-            var result = await _jobApplicationRepository.JobAssessessmentAsync(assessmentId,jobAssessment);
+            (int result,string errorMessage)= await _jobApplicationRepository.JobAssessessmentAsync(assessmentId,jobAssessment);
             if (result == 0)
             {
-                return BadRequest(new { success = false, message = "Failed to update job application.", data = result });
+                return BadRequest(new { success = false, message = errorMessage, data = result });
             };
             return Ok(new { success = true, message = "Job application fetch successfully...", data = result });
         }

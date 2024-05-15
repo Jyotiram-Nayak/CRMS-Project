@@ -93,12 +93,12 @@ namespace CRMS_Project.Infrastructure.Repositories
             if (student == null) { return (0, "Student details not found."); }
             if (student?.IsSelected == true) { return (0, "Student already selected."); }
             var job = _context.JobPostings.Find(jobApplication.JobId);
-            if (job == null) { return (0,"Job not found."); }
-            var application = _context.JobApplications.Where(x=>x.StudentId == userId && x.CompanyId == job.CompanyId).FirstOrDefault();
-            if(application != null) { return (0, "Already applyed."); }
+            if (job == null) { return (0, "Job not found."); }
+            var application = _context.JobApplications.Where(x => x.StudentId == userId && x.CompanyId == job.CompanyId).FirstOrDefault();
+            if (application != null) { return (0, "Already applyed."); }
             var user = await _userManager.FindByIdAsync(userId.ToString());
             if (user == null) { return (0, "user not found."); }
-            if (user.UniversityId != job.UniversityId) { return (0,"unauthorized"); }
+            if (user.UniversityId != job.UniversityId) { return (0, "unauthorized"); }
             var newJobApplication = new JobApplication
             {
                 ApplicationId = Guid.NewGuid(),
@@ -115,12 +115,12 @@ namespace CRMS_Project.Infrastructure.Repositories
             var result = await _context.SaveChangesAsync();
             return (result, result > 0 ? "" : "Error occurred while saving the job application.");
         }
-        public async Task<int> JobAssessessmentAsync(Guid applicationId, JobAssessmentRequest jobAssessment)
+        public async Task<(int result, string errorMessage)> JobAssessessmentAsync(Guid applicationId, JobAssessmentRequest jobAssessment)
         {
             var userId = _userService.GetUserId();
             var application = await _context.JobApplications.FindAsync(applicationId);
-            if (application == null) { return 0; }
-            if (application.CompanyId != userId) { return 0; }
+            if (application == null) { return (0,"Application not found"); }
+            if (application.CompanyId != userId) { return (0, "Invalid request"); }
             _context.Entry(application).State = EntityState.Modified;
             application.InterviewDate = jobAssessment.InterviewDate;
             application.AssessmentLink = jobAssessment.AssessmentLink;
@@ -131,7 +131,8 @@ namespace CRMS_Project.Infrastructure.Repositories
             {
                 application.AssessmentCompletionDate = DateTime.Now;
             }
-            application.isSelected = (SelectionStatus)jobAssessment.isSelected;
+            application.isSelected = jobAssessment.isSelected.HasValue ?
+                (SelectionStatus)jobAssessment.isSelected : SelectionStatus.Pending;
             if (application.isSelected == SelectionStatus.Selected)
             {
                 var student = _context.Students.Where(x => x.UserId == application.StudentId).FirstOrDefault();
@@ -141,7 +142,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                 }
             }
             var result = await _context.SaveChangesAsync();
-            return result;
+            return (result, result > 0 ? "" : "Error occurred while updating the job application.");
         }
     }
 }

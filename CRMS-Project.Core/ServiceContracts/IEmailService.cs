@@ -10,5 +10,6 @@ namespace CRMS_Project.Core.ServiceContracts
     public interface IEmailService
     {
         Task SendEmailConfirmationAsync(ApplicationUser user);
+        Task SendForgotEmailAsync(ApplicationUser user);
     }
 }
