@@ -11,6 +11,7 @@ using CRMS_Project.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CRMS_Project.Infrastructure.Repositories
 {
@@ -37,99 +38,136 @@ namespace CRMS_Project.Infrastructure.Repositories
 
         public async Task<int> CreateJobAsync(JobPostingRequest jobPosting)
         {
-            var companyId = _userService.GetUserId();
-            var courses = jobPosting.Courses.ToList();
-            var job = new JobPosting
+            try
             {
-                JobId = Guid.NewGuid(),
-                CompanyId = companyId,
-                UniversityId = jobPosting.UniversityId,
-                Courses = courses,
-                Title = jobPosting.Title,
-                Description = jobPosting.Description,
-                PostedDate = DateTime.Now,
-                Deadline = jobPosting.Deadline,
-                Document = jobPosting.Document,
-                CreateOn = DateTime.Now,
-                Status = ApplicationStatus.Pending,
-            };
-            _context.JobPostings.Add(job);
-            return await _context.SaveChangesAsync();
+                var companyId = _userService.GetUserId();
+                var courses = jobPosting.Courses.ToList();
+                var job = new JobPosting
+                {
+                    JobId = Guid.NewGuid(),
+                    CompanyId = companyId,
+                    UniversityId = jobPosting.UniversityId,
+                    Courses = courses,
+                    Title = jobPosting.Title,
+                    Description = jobPosting.Description,
+                    PostedDate = DateTime.Now,
+                    Deadline = jobPosting.Deadline,
+                    Document = jobPosting.Document,
+                    CreateOn = DateTime.Now,
+                    Status = ApplicationStatus.Pending,
+                };
+                _context.JobPostings.Add(job);
+                return await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
         }
         public async Task<List<JobPostingResponse>> GetAllJobsAsync()
         {
-            var userRole = _userService.GetUserRole();
-            var userId = _userService.GetUserId();
-            var applications = await (from JobPostings in _context.JobPostings
-                                      join user in _userManager.Users
-                                      on (userRole == UserRoles.University ? JobPostings.CompanyId : JobPostings.UniversityId) equals user.Id
-                                      where (userRole == UserRoles.University ? JobPostings.UniversityId : JobPostings.CompanyId) == userId
-                                      orderby JobPostings.PostedDate descending
-                                      select new JobPostingResponse
-                                      {
-                                          JobId = JobPostings.JobId,
-                                          CompanyId = JobPostings.CompanyId,
-                                          UniversityId = JobPostings.UniversityId,
-                                          Courses = JobPostings.Courses,
-                                          Title = JobPostings.Title,
-                                          Description = JobPostings.Description,
-                                          Status = JobPostings.Status,
-                                          PostedDate = JobPostings.PostedDate,
-                                          ApprovedDate = JobPostings.ApprovedDate,
-                                          RejectedDate = JobPostings.RejectedDate,
-                                          Deadline = JobPostings.Deadline,
-                                          Document = JobPostings.Document,
-                                          FirstName = user.FirstName,
-                                          LastName = user.LastName,
-                                          Email = user.Email ?? "",
-                                          PhoneNumber = user.PhoneNumber ?? "",
-                                          City = user.City,
-                                          State = user.State,
-                                          Website = user.Website,
-                                          Bio = user.Bio,
-                                          Address = user.Address,
-                                      }).ToListAsync();
-            return applications;
+            try
+            {
+
+                var userRole = _userService.GetUserRole();
+                var userId = _userService.GetUserId();
+                var applications = await (from JobPostings in _context.JobPostings
+                                          join user in _userManager.Users
+                                          on (userRole == UserRoles.University ? JobPostings.CompanyId : JobPostings.UniversityId) equals user.Id
+                                          where (userRole == UserRoles.University ? JobPostings.UniversityId : JobPostings.CompanyId) == userId
+                                          orderby JobPostings.PostedDate descending
+                                          select new JobPostingResponse
+                                          {
+                                              JobId = JobPostings.JobId,
+                                              CompanyId = JobPostings.CompanyId,
+                                              UniversityId = JobPostings.UniversityId,
+                                              Courses = JobPostings.Courses,
+                                              Title = JobPostings.Title,
+                                              Description = JobPostings.Description,
+                                              Status = JobPostings.Status,
+                                              PostedDate = JobPostings.PostedDate,
+                                              ApprovedDate = JobPostings.ApprovedDate,
+                                              RejectedDate = JobPostings.RejectedDate,
+                                              Deadline = JobPostings.Deadline,
+                                              Document = JobPostings.Document,
+                                              FirstName = user.FirstName,
+                                              LastName = user.LastName,
+                                              Email = user.Email ?? "",
+                                              PhoneNumber = user.PhoneNumber ?? "",
+                                              City = user.City,
+                                              State = user.State,
+                                              Website = user.Website,
+                                              Bio = user.Bio,
+                                              Address = user.Address,
+                                          }).ToListAsync();
+                return applications;
+
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
         public async Task<JobPostingResponse> GetJobByIdAsync(Guid jobId)
         {
-            var jobPlacement = await _context.JobPostings.Where(x => x.CompanyId == _userService.GetUserId() && x.JobId == jobId).Select(j => new JobPostingResponse
+            try
             {
-                JobId = j.JobId,
-                CompanyId = j.CompanyId,
-                UniversityId = j.UniversityId,
-                Title = j.Title,
-                Description = j.Description,
-                PostedDate = j.PostedDate,
-                Deadline = j.Deadline,
-                Document = j.Document,
-                CreateOn = j.CreateOn,
-                UpdateOn = j.UpdateOn,
-            }).FirstOrDefaultAsync();
-            return jobPlacement;
+                var jobPlacement = await _context.JobPostings.Where(x => x.CompanyId == _userService.GetUserId() && x.JobId == jobId).Select(j => new JobPostingResponse
+                {
+                    JobId = j.JobId,
+                    CompanyId = j.CompanyId,
+                    UniversityId = j.UniversityId,
+                    Title = j.Title,
+                    Description = j.Description,
+                    PostedDate = j.PostedDate,
+                    Deadline = j.Deadline,
+                    Document = j.Document,
+                    CreateOn = j.CreateOn,
+                    UpdateOn = j.UpdateOn,
+                }).FirstOrDefaultAsync();
+                return jobPlacement;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
         public async Task<(int result, string errorMessage)> DeleteJobAsync(Guid jobId)
         {
-            var jobPlacement = await _context.JobPostings.Where(x => x.CompanyId == _userService.GetUserId() && x.JobId == jobId).FirstOrDefaultAsync();
-            if (jobPlacement == null) return (0,"Invalid request");
-            _context.JobPostings.Remove(jobPlacement);
-            var result = await _context.SaveChangesAsync();
-            return (result, result > 0 ? "" : "Error occurred while deleting the job.");
+            try
+            {
+                var jobPlacement = await _context.JobPostings.Where(x => x.CompanyId == _userService.GetUserId() && x.JobId == jobId).FirstOrDefaultAsync();
+                if (jobPlacement == null) return (0, "Invalid request");
+                _context.JobPostings.Remove(jobPlacement);
+                var result = await _context.SaveChangesAsync();
+                return (result, result > 0 ? "" : "Error occurred while deleting the job.");
+            }
+            catch (Exception)
+            {
+                return (0, "Error occurred while deleting the job.");
+            }
         }
         public async Task<(int result, string errorMessage)> UpdateJobAsync(Guid jobId, JobPostingRequest jobPosting)
         {
-            var jobPlacement = await _context.JobPostings.Where(x => x.CompanyId == _userService.GetUserId() && x.JobId == jobId).FirstOrDefaultAsync();
-            if (jobPlacement == null) { return (0, "Invalid request"); }
-            jobPlacement.UniversityId = jobPosting.UniversityId;
-            jobPlacement.Title = jobPosting.Title;
-            jobPlacement.Description = jobPosting.Description;
-            jobPlacement.Deadline = jobPosting.Deadline;
-            jobPlacement.Document = jobPosting.Document;
-            jobPlacement.UpdateOn = DateTime.Now;
-            var result = await _context.SaveChangesAsync();
-            return (result, result > 0 ? "" : "Error occurred while updating the job.");
+            try
+            {
+                var jobPlacement = await _context.JobPostings.Where(x => x.CompanyId == _userService.GetUserId() && x.JobId == jobId).FirstOrDefaultAsync();
+                if (jobPlacement == null) { return (0, "Invalid request"); }
+                jobPlacement.UniversityId = jobPosting.UniversityId;
+                jobPlacement.Title = jobPosting.Title;
+                jobPlacement.Description = jobPosting.Description;
+                jobPlacement.Deadline = jobPosting.Deadline;
+                jobPlacement.Document = jobPosting.Document;
+                jobPlacement.UpdateOn = DateTime.Now;
+                var result = await _context.SaveChangesAsync();
+                return (result, result > 0 ? "" : "Error occurred while updating the job.");
+            }
+            catch (Exception)
+            {
+                return (0, "Error occurred while updating the job.");
+            }
         }
-        public async Task<(int result,string errorMessage)> ApproveOrRejectApplicationAsync(Guid jobId, ApplicationStatus status)
+        public async Task<(int result, string errorMessage)> ApproveOrRejectApplicationAsync(Guid jobId, ApplicationStatus status)
         {
             try
             {
@@ -137,7 +175,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                 var universituId = _userService.GetUserId();
                 if (application == null && universituId != application?.UniversityId)
                 {
-                    return (0,"Invalid request");
+                    return (0, "Invalid request");
                 }
                 application.Status = status;
                 if (status == ApplicationStatus.Approved)
@@ -159,42 +197,49 @@ namespace CRMS_Project.Infrastructure.Repositories
 
         public async Task<List<JobPostingResponse>> GetAllApprovedJobByUniversityId(Guid universityId)
         {
-            var userId = _userService.GetUserId().ToString();
-            var loginUser = await _userManager.FindByIdAsync(userId);
-            var course = loginUser.Course ?? StudentCourse.MCA;
-            var applications = await (from JobPostings in _context.JobPostings
-                                      join user in _userManager.Users
-                                      on JobPostings.CompanyId equals user.Id
-                                      where JobPostings.UniversityId == universityId
-                                      && JobPostings.Status == ApplicationStatus.Approved
-                                      && JobPostings.Courses.Contains(course)
+            try
+            {
+                var userId = _userService.GetUserId().ToString();
+                var loginUser = await _userManager.FindByIdAsync(userId);
+                var course = loginUser.Course ?? StudentCourse.MCA;
+                var applications = await (from JobPostings in _context.JobPostings
+                                          join user in _userManager.Users
+                                          on JobPostings.CompanyId equals user.Id
+                                          where JobPostings.UniversityId == universityId
+                                          && JobPostings.Status == ApplicationStatus.Approved
+                                          && JobPostings.Courses.Contains(course)
 
-                                      orderby JobPostings.PostedDate descending
-                                      select new JobPostingResponse
-                                      {
-                                          JobId = JobPostings.JobId,
-                                          CompanyId = JobPostings.CompanyId,
-                                          UniversityId = JobPostings.UniversityId,
-                                          Courses = JobPostings.Courses,
-                                          Title = JobPostings.Title,
-                                          Description = JobPostings.Description,
-                                          Status = JobPostings.Status,
-                                          PostedDate = JobPostings.PostedDate,
-                                          ApprovedDate = JobPostings.ApprovedDate,
-                                          RejectedDate = JobPostings.RejectedDate,
-                                          Deadline = JobPostings.Deadline,
-                                          Document = JobPostings.Document,
-                                          FirstName = user.FirstName,
-                                          LastName = user.LastName,
-                                          Email = user.Email ?? "",
-                                          PhoneNumber = user.PhoneNumber ?? "",
-                                          City = user.City,
-                                          State = user.State,
-                                          Website = user.Website,
-                                          Bio = user.Bio,
-                                          Address = user.Address,
-                                      }).ToListAsync();
-            return applications;
+                                          orderby JobPostings.PostedDate descending
+                                          select new JobPostingResponse
+                                          {
+                                              JobId = JobPostings.JobId,
+                                              CompanyId = JobPostings.CompanyId,
+                                              UniversityId = JobPostings.UniversityId,
+                                              Courses = JobPostings.Courses,
+                                              Title = JobPostings.Title,
+                                              Description = JobPostings.Description,
+                                              Status = JobPostings.Status,
+                                              PostedDate = JobPostings.PostedDate,
+                                              ApprovedDate = JobPostings.ApprovedDate,
+                                              RejectedDate = JobPostings.RejectedDate,
+                                              Deadline = JobPostings.Deadline,
+                                              Document = JobPostings.Document,
+                                              FirstName = user.FirstName,
+                                              LastName = user.LastName,
+                                              Email = user.Email ?? "",
+                                              PhoneNumber = user.PhoneNumber ?? "",
+                                              City = user.City,
+                                              State = user.State,
+                                              Website = user.Website,
+                                              Bio = user.Bio,
+                                              Address = user.Address,
+                                          }).ToListAsync();
+                return applications;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

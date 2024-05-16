@@ -15,20 +15,13 @@ namespace CRMS_Project.Core.Services
     public class EmailService : IEmailService
     {
         private const string templatePath = @"wwwroot/EmailTemplate/{0}.html";
-        private readonly IOptions<SMTPConfiguration> _smtpconfig;
         private readonly IConfiguration _configuration;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IWebHostEnvironment _environment;
-
-        public EmailService(IOptions<SMTPConfiguration> smtpconfig,
-            IConfiguration configuration,
-            UserManager<ApplicationUser> userManager,
-            IWebHostEnvironment environment)
+        public EmailService(IConfiguration configuration,
+            UserManager<ApplicationUser> userManager)
         {
-            _smtpconfig = smtpconfig;
             _configuration = configuration;
             _userManager = userManager;
-            _environment = environment;
         }
         public async Task SendEmailConfirmationAsync(ApplicationUser user)
         {
@@ -59,7 +52,7 @@ namespace CRMS_Project.Core.Services
             if (!string.IsNullOrEmpty(token))
             {
                 //await SendEmailConfirmationAsync(user, token);
-                string appDomain = _configuration.GetSection("Application:AppDomain").Value ?? "";
+                string appDomain = _configuration.GetSection("Application:frontendDomain").Value ?? "";
                 string confirmLink = _configuration.GetSection("Application:ForgotPassword").Value ?? "";
                 EmailMessage emailMessage = new EmailMessage
                 {

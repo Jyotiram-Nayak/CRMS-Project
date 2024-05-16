@@ -6,6 +6,7 @@ using CRMS_Project.Core.DTO.Request;
 using CRMS_Project.Core.DTO.Response;
 using CRMS_Project.Core.ServiceContracts;
 using CRMS_Project.Core.Services;
+using CRMS_Project.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,13 +21,17 @@ namespace CRMS_Project.Infrastructure.Repositories
         private readonly IUserService _userService;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IStudentRepository _student;
+        private readonly AppDbContext _context;
 
         public AuthRepository(UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IEmailService emailService,
             IUserService userService,
             IMapper mapper,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            IStudentRepository student,
+            AppDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -34,50 +39,56 @@ namespace CRMS_Project.Infrastructure.Repositories
             _userService = userService;
             _mapper = mapper;
             _webHostEnvironment = webHostEnvironment;
+            _student = student;
+            _context = context;
         }
         public async Task<IdentityResult> RegisterUserAsync(RegisterRequest user)
         {
-            var existingUser = await _userManager.FindByEmailAsync(user.Email);
-            if (existingUser != null)
+            try
             {
-                return IdentityResult.Failed(new IdentityError { Description = "Email is already registered." });
-            }
-            ApplicationUser newUser = new ApplicationUser
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                IsApproved = false,
-                Image = user.Image,
-                PhoneNumber = user.PhoneNumber,
-                Address = user.Address,
-                City = user.City,
-                State = user.State,
-                Website = user.Website,
-                Bio = user.Bio,
-                Email = user.Email,
-                UserName = user.Email,
-                CreateOn = DateTime.Now,
-                Role = user.Role.ToLower(),
-            };
-            IdentityResult result = await _userManager.CreateAsync(newUser, user.Password);
-            if (!result.Succeeded)
-            {
+                var existingUser = await _userManager.FindByEmailAsync(user.Email);
+                if (existingUser != null) { return IdentityResult.Failed(new IdentityError { Description = "Email is already registered." }); }
+                ApplicationUser newUser = new ApplicationUser
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    IsApproved = false,
+                    Image = user.Image,
+                    PhoneNumber = user.PhoneNumber,
+                    Address = user.Address,
+                    City = user.City,
+                    State = user.State,
+                    Website = user.Website,
+                    Bio = user.Bio,
+                    Email = user.Email,
+                    UserName = user.Email,
+                    CreateOn = DateTime.Now,
+                    Role = user.Role.ToLower(),
+                };
+                IdentityResult result = await _userManager.CreateAsync(newUser, user.Password);
+                if (!result.Succeeded)
+                {
+                    return result;
+                }
+                switch (user.Role.ToLower())
+                {
+                    case "university":
+                        await _userManager.AddToRoleAsync(newUser, UserRoles.University);
+                        break;
+                    case "company":
+                        await _userManager.AddToRoleAsync(newUser, UserRoles.Company);
+                        break;
+                    default:
+                        await _userManager.AddToRoleAsync(newUser, UserRoles.University);
+                        break;
+                }
+                await _emailService.SendEmailConfirmationAsync(newUser);
                 return result;
             }
-            switch (user.Role.ToLower())
+            catch (Exception ex)
             {
-                case "university":
-                    await _userManager.AddToRoleAsync(newUser, UserRoles.University);
-                    break;
-                case "company":
-                    await _userManager.AddToRoleAsync(newUser, UserRoles.Company);
-                    break;
-                default:
-                    await _userManager.AddToRoleAsync(newUser, UserRoles.University);
-                    break;
+                return IdentityResult.Failed(new IdentityError { Description = ex.Message });
             }
-            await _emailService.SendEmailConfirmationAsync(newUser);
-            return result;
         }
 
         public async Task<SignInResult> LoginAsync(LoginRequest loginRequest)
@@ -86,96 +97,125 @@ namespace CRMS_Project.Infrastructure.Repositories
         }
         public async Task<IdentityResult> ConfirmEmail(Guid uid, string token)
         {
-            token = token.Replace(" ", "+");
-            var user = await _userManager.FindByIdAsync(uid.ToString());
-            var result = await _userManager.ConfirmEmailAsync(user, token);
-            return result;
+            try
+            {
+                token = token.Replace(" ", "+");
+                var user = await _userManager.FindByIdAsync(uid.ToString());
+                if (user == null) { return IdentityResult.Failed(new IdentityError { Description = "User not found." }); }
+                var result = await _userManager.ConfirmEmailAsync(user, token);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = ex.Message });
+            }
         }
         public async Task<IdentityResult> ChangePasswordAsync(ChangePasswordRequest changePassword)
         {
-            var uid = _userService.GetUserId();
-            var user = await _userManager.FindByIdAsync(uid.ToString());
-            if (user == null)
+            try
             {
-                return IdentityResult.Failed(new IdentityError { Description = "User not found." });
+                var uid = _userService.GetUserId();
+                var user = await _userManager.FindByIdAsync(uid.ToString());
+                if (user == null) { return IdentityResult.Failed(new IdentityError { Description = "User not found." }); }
+                return await _userManager.ChangePasswordAsync(user, changePassword.CurrentPassword, changePassword.NewPassword);
             }
-            return await _userManager.ChangePasswordAsync(user, changePassword.CurrentPassword, changePassword.NewPassword);
+            catch (Exception ex)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = ex.Message });
+            }
         }
         public async Task<AuthenticationResponse> GetUserByIdAsunc(Guid? userId)
         {
-            if (userId == null)
+            try
             {
-                userId = _userService.GetUserId();
-            }
-            var user = await _userManager.FindByIdAsync(userId.ToString());
-            if (user == null) { return null; }
-            var userdetails = new AuthenticationResponse
-            {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Email = user.Email ?? "",
-                PhoneNumber = user.PhoneNumber ?? "",
-                Address = user.Address,
-                City = user.City,
-                State = user.State,
-                Website = user.Website,
-                Bio = user.Bio,
-                Image = user.Image,
-                Role = user.Role,
-                IsApproved = user.IsApproved,
-                CreateOn = user.CreateOn,
-                UpdateOn = user.UpdateOn,
-            };
+                if (userId == null)
+                {
+                    userId = _userService.GetUserId();
+                }
+                var user = await _userManager.FindByIdAsync(userId.ToString());
+                if (user == null) { return null; }
+                var userdetails = new AuthenticationResponse
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email ?? "",
+                    PhoneNumber = user.PhoneNumber ?? "",
+                    Address = user.Address,
+                    City = user.City,
+                    State = user.State,
+                    Website = user.Website,
+                    Bio = user.Bio,
+                    Image = user.Image,
+                    Role = user.Role,
+                    IsApproved = user.IsApproved,
+                    CreateOn = user.CreateOn,
+                    UpdateOn = user.UpdateOn,
+                };
 
-            return userdetails;
+                return userdetails;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
         public async Task<List<AuthenticationResponse>> GetAllUserByRole(string role)
         {
-            var user = await _userManager.Users.Where(x => x.Role == role).Select(x => new AuthenticationResponse
+            try
             {
-                Id = x.Id,
-                FirstName = x.FirstName,
-                LastName = x.LastName,
-                Email = x.Email ?? "",
-                PhoneNumber = x.PhoneNumber ?? "",
-                Address = x.Address,
-                City = x.City,
-                State = x.State,
-                Website = x.Website,
-                Bio = x.Bio,
-                Image = x.Image,
-                Role = x.Role,
-                IsApproved = x.IsApproved,
-                CreateOn = x.CreateOn,
-                UpdateOn = x.UpdateOn,
-            }).ToListAsync();
+                var user = await _userManager.Users.Where(x => x.Role == role).Select(x => new AuthenticationResponse
+                {
+                    Id = x.Id,
+                    FirstName = x.FirstName,
+                    LastName = x.LastName,
+                    Email = x.Email ?? "",
+                    PhoneNumber = x.PhoneNumber ?? "",
+                    Address = x.Address,
+                    City = x.City,
+                    State = x.State,
+                    Website = x.Website,
+                    Bio = x.Bio,
+                    Image = x.Image,
+                    Role = x.Role,
+                    IsApproved = x.IsApproved,
+                    CreateOn = x.CreateOn,
+                    UpdateOn = x.UpdateOn,
+                }).ToListAsync();
 
-            return user;
+                return user;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
         public async Task<IdentityResult> UpdateUserAsync(UpdateUserRequest updateUser)
         {
-            var userId = _userService.GetUserId().ToString();
-            // Find the user by userId
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
+            try
             {
-                return IdentityResult.Failed(new IdentityError { Description = $"User with ID '{userId}' not found." });
+                var userId = _userService.GetUserId().ToString();
+                // Find the user by userId
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null) { IdentityResult.Failed(new IdentityError { Description = $"User with ID '{userId}' not found." }); }
+                user.FirstName = updateUser.FirstName;
+                user.LastName = updateUser.LastName;
+                user.Email = updateUser.Email;
+                user.PhoneNumber = updateUser.PhoneNumber;
+                user.Address = updateUser.Address;
+                user.City = updateUser.City;
+                user.State = updateUser.State;
+                user.Website = updateUser.Website;
+                user.Bio = updateUser.Bio;
+                user.Image = updateUser.Image;
+                user.UpdateOn = DateTime.Now;
+                // Call UserManager's UpdateAsync method to update the user
+                return await _userManager.UpdateAsync(user);
             }
-            user.FirstName = updateUser.FirstName;
-            user.LastName = updateUser.LastName;
-            user.Email = updateUser.Email;
-            user.PhoneNumber = updateUser.PhoneNumber;
-            user.Address = updateUser.Address;
-            user.City = updateUser.City;
-            user.State = updateUser.State;
-            user.Website = updateUser.Website;
-            user.Bio = updateUser.Bio;
-            user.Image = updateUser.Image;
-            user.UpdateOn = DateTime.Now;
-            // Call UserManager's UpdateAsync method to update the user
-            return await _userManager.UpdateAsync(user);
+            catch (Exception ex)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = ex.Message });
+            }
         }
         public async Task<IdentityResult> SendForgotPasswordEmail(string email)
         {
@@ -186,9 +226,62 @@ namespace CRMS_Project.Infrastructure.Repositories
                 await _emailService.SendForgotEmailAsync(user);
                 return IdentityResult.Success;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return IdentityResult.Failed(new IdentityError { Description = "Failed to send forgot password email" });
+                return IdentityResult.Failed(new IdentityError { Description = ex.Message });
+            }
+        }
+        public async Task<IdentityResult> ResetPasswordAsync(ResetPasswordRequest resetPassword)
+        {
+            try
+            {
+                resetPassword.Token = resetPassword.Token.Replace(" ", "+");
+                var user = await _userManager.FindByIdAsync(resetPassword.Uid.ToString());
+                if (user == null) { return IdentityResult.Failed(new IdentityError { Description = "Failed to reset password." }); }
+                var result = await _userManager.ResetPasswordAsync(user, resetPassword.Token, resetPassword.NewPassword);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = ex.Message });
+            }
+        }
+        public async Task<UniversityDashboardResponse> UniversityDashboard()
+        {
+            try
+            {
+                var userId = _userService.GetUserId();
+                var allStudents = await _userManager.Users.Where(x => x.Role == UserRoles.Student && x.UniversityId == userId).CountAsync();
+                var response = new UniversityDashboardResponse();
+                var selectedStudentCount = await _context.Students
+                                        .Where(s => s.IsSelected == true)
+                                        .Join(
+                                            _context.Users,
+                                            student => student.UserId,
+                                            user => user.Id,
+                                            (student, user) => new { Student = student, User = user }
+                                        )
+                                        .Where(joinResult => joinResult.User.UniversityId == userId)
+                                        .CountAsync();
+                var pendingStudentCount = await _context.Students
+                                       .Where(s => s.IsSelected == false)
+                                       .Join(
+                                           _context.Users,
+                                           student => student.UserId,
+                                           user => user.Id,
+                                           (student, user) => new { Student = student, User = user }
+                                       )
+                                       .Where(joinResult => joinResult.User.UniversityId == userId)
+                                       .CountAsync();
+                response.AllStudents = allStudents;
+                response.SelectedStudents = selectedStudentCount;
+                response.PendingStudents = pendingStudentCount;
+                //response.PendingStudents= companyes.Count;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
         }
     }

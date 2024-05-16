@@ -30,7 +30,6 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddTransient<IJwtService, JwtService>();
 builder.Services.AddTransient<IStudentRepository, StudentRepository>();
 builder.Services.AddTransient<IUserService, UserService>();
-//builder.Services.AddTransient<IApplicationRepository, ApplicationRepository>();
 builder.Services.AddTransient<IJobRepository, JobRepository>();
 builder.Services.AddTransient<IJobApplicationRepository, JobApplicationRepository>();
 
@@ -92,7 +91,7 @@ using (var scope = app.Services.CreateScope())
     {
         var servicesProvider = scope.ServiceProvider;
         var userManager = servicesProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        //AppDbInitializer.InitializerAsync(servicesProvider, userManager).Wait();
+        AppDbInitializer.InitializerAsync(servicesProvider, userManager).Wait();
     }
     catch (Exception ex)
     {

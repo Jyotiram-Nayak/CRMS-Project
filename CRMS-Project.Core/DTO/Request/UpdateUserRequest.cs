@@ -27,7 +27,7 @@ namespace CRMS_Project.Core.DTO.Request
         public string City { get; set; }
         [Required]
         public string State { get; set; }
-        [Url(ErrorMessage = "Invalid URL")]
+        //[Url(ErrorMessage = "Invalid URL")]
         public string? Website { get; set; }=String.Empty;
         public string? Bio { get; set; }
         public string? Image { get; set; }

@@ -104,7 +104,7 @@ namespace CRMS_Project.WebApi.Controllers
             }
             return Ok(new { success = true, message = "Password changed successfully.", data = result });
         }
-        [HttpPut("forgot-password/{email}")]
+        [HttpPost("forgot-password/{email}")]
         [Authorize]
         public async Task<IActionResult> ForgotPassword(string email)
         {
@@ -114,6 +114,17 @@ namespace CRMS_Project.WebApi.Controllers
                 return BadRequest(new { success = false, message = "Failed to forgot password" + string.Join(", ", result.Errors.Select(e => e.Description)) });
             }
             return Ok(new { success = true, message = "Email send successfully.", data = result });
+        }
+        [HttpPut("reset-password")]
+        [Authorize]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest resetPassword)
+        {
+            var result = await _authRepository.ResetPasswordAsync(resetPassword);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { success = false, message = "Failed to reset password" + string.Join(", ", result.Errors.Select(e => e.Description)) });
+            }
+            return Ok(new { success = true, message = "Password reset successfully.", data = result });
         }
 
         [HttpPut("update-user")]
@@ -149,6 +160,17 @@ namespace CRMS_Project.WebApi.Controllers
                 return BadRequest(new { success = false, message = "University not found." });
             }
             return Ok(new { success = true, message = "User details fetched successfully.", data = result });
+        }
+        [HttpGet("university-dashboard")]
+        [Authorize]
+        public async Task<IActionResult> GetUniversityDashboard()
+        {
+            var result = await _authRepository.UniversityDashboard();
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "Faild to load Dashboard." });
+            }
+            return Ok(new { success = true, message = "Dashboard load successfully.", data = result });
         }
     }
 }
