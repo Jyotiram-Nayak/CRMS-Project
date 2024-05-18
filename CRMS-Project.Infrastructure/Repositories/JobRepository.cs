@@ -11,6 +11,7 @@ using CRMS_Project.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CRMS_Project.Infrastructure.Repositories
@@ -64,43 +65,93 @@ namespace CRMS_Project.Infrastructure.Repositories
                 return 0;
             }
         }
-        public async Task<List<JobPostingResponse>> GetAllJobsAsync()
+        public async Task<List<JobPostingResponse>> GetAllJobsAsync(PaginationParameters parameters)
         {
             try
             {
-
                 var userRole = _userService.GetUserRole();
                 var userId = _userService.GetUserId();
-                var applications = await (from JobPostings in _context.JobPostings
-                                          join user in _userManager.Users
-                                          on (userRole == UserRoles.University ? JobPostings.CompanyId : JobPostings.UniversityId) equals user.Id
-                                          where (userRole == UserRoles.University ? JobPostings.UniversityId : JobPostings.CompanyId) == userId
-                                          orderby JobPostings.PostedDate descending
-                                          select new JobPostingResponse
-                                          {
-                                              JobId = JobPostings.JobId,
-                                              CompanyId = JobPostings.CompanyId,
-                                              UniversityId = JobPostings.UniversityId,
-                                              Courses = JobPostings.Courses,
-                                              Title = JobPostings.Title,
-                                              Description = JobPostings.Description,
-                                              Status = JobPostings.Status,
-                                              PostedDate = JobPostings.PostedDate,
-                                              ApprovedDate = JobPostings.ApprovedDate,
-                                              RejectedDate = JobPostings.RejectedDate,
-                                              Deadline = JobPostings.Deadline,
-                                              Document = JobPostings.Document,
-                                              FirstName = user.FirstName,
-                                              LastName = user.LastName,
-                                              Email = user.Email ?? "",
-                                              PhoneNumber = user.PhoneNumber ?? "",
-                                              City = user.City,
-                                              State = user.State,
-                                              Website = user.Website,
-                                              Bio = user.Bio,
-                                              Address = user.Address,
-                                          }).ToListAsync();
-                return applications;
+                var query = from JobPostings in _context.JobPostings
+                            join user in _userManager.Users
+                            on (userRole == UserRoles.University ? JobPostings.CompanyId : JobPostings.UniversityId) equals user.Id
+                            where (userRole == UserRoles.University ? JobPostings.UniversityId : JobPostings.CompanyId) == userId
+                            select new JobPostingResponse
+                            {
+                                JobId = JobPostings.JobId,
+                                CompanyId = JobPostings.CompanyId,
+                                UniversityId = JobPostings.UniversityId,
+                                Courses = JobPostings.Courses,
+                                Title = JobPostings.Title,
+                                Description = JobPostings.Description,
+                                Status = JobPostings.Status,
+                                PostedDate = JobPostings.PostedDate,
+                                ApprovedDate = JobPostings.ApprovedDate,
+                                RejectedDate = JobPostings.RejectedDate,
+                                Deadline = JobPostings.Deadline,
+                                Document = JobPostings.Document,
+                                FirstName = user.FirstName,
+                                LastName = user.LastName,
+                                Email = user.Email ?? "",
+                                PhoneNumber = user.PhoneNumber ?? "",
+                                City = user.City,
+                                State = user.State,
+                                Website = user.Website,
+                                Bio = user.Bio,
+                                Address = user.Address,
+                            };
+                if (!string.IsNullOrEmpty(parameters.FilterOn) && !string.IsNullOrEmpty(parameters.FilterQuery))
+                {
+                    if (parameters.FilterOn.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = query.Where(job => job.Title.Contains(parameters.FilterQuery));
+                    }
+                    else if (parameters.FilterOn.Equals("FirstName", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = query.Where(job => job.FirstName.Contains(parameters.FilterQuery));
+                        query = query.Where(job => job.LastName.Contains(parameters.FilterQuery));
+                    }
+                    else if (parameters.FilterOn.Equals("City", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = query.Where(job => job.City.Contains(parameters.FilterQuery));
+                    }
+                    else if (parameters.FilterOn.Equals("State", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = query.Where(job => job.State.Contains(parameters.FilterQuery));
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(parameters.SortBy))
+                {
+                    if (parameters.SortBy.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = parameters.IsAscending ? query.OrderBy(job => job.Title) : query.OrderByDescending(job => job.Title);
+                    }
+                    else if (parameters.SortBy.Equals("PostedDate", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = parameters.IsAscending ? query.OrderBy(job => job.PostedDate) : query.OrderByDescending(job => job.PostedDate);
+                    }
+                    else if (parameters.SortBy.Equals("FirstName", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = parameters.IsAscending ? query.OrderBy(job => job.FirstName) : query.OrderByDescending(job => job.PostedDate);
+                    }
+                    else if (parameters.SortBy.Equals("City", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = parameters.IsAscending ? query.OrderBy(job => job.City) : query.OrderByDescending(job => job.PostedDate);
+                    }
+                    else if (parameters.SortBy.Equals("State", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = parameters.IsAscending ? query.OrderBy(job => job.State) : query.OrderByDescending(job => job.PostedDate);
+                    }
+                }
+                else
+                {
+                    query = query.OrderByDescending(job => job.PostedDate);
+                }
+                var paginatedQuery = query.Skip((parameters.Page - 1) * parameters.PageSize)
+                                                 .Take(parameters.PageSize);
+
+                var jobPostings = await paginatedQuery.ToListAsync();
+                return jobPostings;
 
             }
             catch (Exception)
@@ -195,45 +246,97 @@ namespace CRMS_Project.Infrastructure.Repositories
             }
         }
 
-        public async Task<List<JobPostingResponse>> GetAllApprovedJobByUniversityId(Guid universityId)
+        public async Task<List<JobPostingResponse>> GetAllApprovedJobByUniversityId(Guid universityId, PaginationParameters parameters)
         {
             try
             {
                 var userId = _userService.GetUserId().ToString();
                 var loginUser = await _userManager.FindByIdAsync(userId);
-                var course = loginUser.Course ?? StudentCourse.MCA;
-                var applications = await (from JobPostings in _context.JobPostings
-                                          join user in _userManager.Users
-                                          on JobPostings.CompanyId equals user.Id
-                                          where JobPostings.UniversityId == universityId
-                                          && JobPostings.Status == ApplicationStatus.Approved
-                                          && JobPostings.Courses.Contains(course)
+                var course = loginUser?.Course ?? StudentCourse.MCA;
+                var query = from JobPostings in _context.JobPostings
+                            join user in _userManager.Users
+                            on JobPostings.CompanyId equals user.Id
+                            where JobPostings.UniversityId == universityId
+                            && JobPostings.Status == ApplicationStatus.Approved
+                            && JobPostings.Courses.Contains(course)
+                            orderby JobPostings.PostedDate descending
+                            select new JobPostingResponse
+                            {
+                                JobId = JobPostings.JobId,
+                                CompanyId = JobPostings.CompanyId,
+                                UniversityId = JobPostings.UniversityId,
+                                Courses = JobPostings.Courses,
+                                Title = JobPostings.Title,
+                                Description = JobPostings.Description,
+                                Status = JobPostings.Status,
+                                PostedDate = JobPostings.PostedDate,
+                                ApprovedDate = JobPostings.ApprovedDate,
+                                RejectedDate = JobPostings.RejectedDate,
+                                Deadline = JobPostings.Deadline,
+                                Document = JobPostings.Document,
+                                FirstName = user.FirstName,
+                                LastName = user.LastName,
+                                Email = user.Email ?? "",
+                                PhoneNumber = user.PhoneNumber ?? "",
+                                City = user.City,
+                                State = user.State,
+                                Website = user.Website,
+                                Bio = user.Bio,
+                                Address = user.Address,
+                            };
 
-                                          orderby JobPostings.PostedDate descending
-                                          select new JobPostingResponse
-                                          {
-                                              JobId = JobPostings.JobId,
-                                              CompanyId = JobPostings.CompanyId,
-                                              UniversityId = JobPostings.UniversityId,
-                                              Courses = JobPostings.Courses,
-                                              Title = JobPostings.Title,
-                                              Description = JobPostings.Description,
-                                              Status = JobPostings.Status,
-                                              PostedDate = JobPostings.PostedDate,
-                                              ApprovedDate = JobPostings.ApprovedDate,
-                                              RejectedDate = JobPostings.RejectedDate,
-                                              Deadline = JobPostings.Deadline,
-                                              Document = JobPostings.Document,
-                                              FirstName = user.FirstName,
-                                              LastName = user.LastName,
-                                              Email = user.Email ?? "",
-                                              PhoneNumber = user.PhoneNumber ?? "",
-                                              City = user.City,
-                                              State = user.State,
-                                              Website = user.Website,
-                                              Bio = user.Bio,
-                                              Address = user.Address,
-                                          }).ToListAsync();
+                if (!string.IsNullOrEmpty(parameters.FilterOn) && !string.IsNullOrEmpty(parameters.FilterQuery))
+                {
+                    if (parameters.FilterOn.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = query.Where(job => job.Title.Contains(parameters.FilterQuery));
+                    }
+                    else if (parameters.FilterOn.Equals("FirstName", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = query.Where(job => job.FirstName.Contains(parameters.FilterQuery));
+                        query = query.Where(job => job.LastName.Contains(parameters.FilterQuery));
+                    }
+                    else if (parameters.FilterOn.Equals("City", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = query.Where(job => job.City.Contains(parameters.FilterQuery));
+                    }
+                    else if (parameters.FilterOn.Equals("State", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = query.Where(job => job.State.Contains(parameters.FilterQuery));
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(parameters.SortBy))
+                {
+                    if (parameters.SortBy.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = parameters.IsAscending ? query.OrderBy(job => job.Title) : query.OrderByDescending(job => job.Title);
+                    }
+                    else if (parameters.SortBy.Equals("PostedDate", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = parameters.IsAscending ? query.OrderBy(job => job.PostedDate) : query.OrderByDescending(job => job.PostedDate);
+                    }
+                    else if (parameters.SortBy.Equals("FirstName", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = parameters.IsAscending ? query.OrderBy(job => job.FirstName) : query.OrderByDescending(job => job.PostedDate);
+                    }
+                    else if (parameters.SortBy.Equals("City", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = parameters.IsAscending ? query.OrderBy(job => job.City) : query.OrderByDescending(job => job.PostedDate);
+                    }
+                    else if (parameters.SortBy.Equals("State", StringComparison.OrdinalIgnoreCase))
+                    {
+                        query = parameters.IsAscending ? query.OrderBy(job => job.State) : query.OrderByDescending(job => job.PostedDate);
+                    }
+                }
+                else
+                {
+                    query = query.OrderByDescending(job => job.PostedDate);
+                }
+                var paginatedQuery = query.Skip((parameters.Page - 1) * parameters.PageSize)
+                                                 .Take(parameters.PageSize);
+
+                var applications = await paginatedQuery.ToListAsync();
                 return applications;
             }
             catch (Exception)

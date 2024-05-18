@@ -4,8 +4,8 @@ using CRMS_Project.Core.Domain.RepositoryContracts;
 using CRMS_Project.Core.DTO;
 using CRMS_Project.Core.DTO.Request;
 using CRMS_Project.Core.DTO.Response;
+using CRMS_Project.Core.Enums;
 using CRMS_Project.Core.ServiceContracts;
-using CRMS_Project.Core.Services;
 using CRMS_Project.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -251,8 +251,8 @@ namespace CRMS_Project.Infrastructure.Repositories
             try
             {
                 var userId = _userService.GetUserId();
+                var totalJobs = await _context.JobPostings.Where(x => x.UniversityId == userId).CountAsync();
                 var allStudents = await _userManager.Users.Where(x => x.Role == UserRoles.Student && x.UniversityId == userId).CountAsync();
-                var response = new UniversityDashboardResponse();
                 var selectedStudentCount = await _context.Students
                                         .Where(s => s.IsSelected == true)
                                         .Join(
@@ -273,13 +273,64 @@ namespace CRMS_Project.Infrastructure.Repositories
                                        )
                                        .Where(joinResult => joinResult.User.UniversityId == userId)
                                        .CountAsync();
-                response.AllStudents = allStudents;
-                response.SelectedStudents = selectedStudentCount;
-                response.PendingStudents = pendingStudentCount;
-                //response.PendingStudents= companyes.Count;
+                var response = new UniversityDashboardResponse
+                {
+
+                    AllStudents = allStudents,
+                    SelectedStudents = selectedStudentCount,
+                    PendingStudents = pendingStudentCount,
+                    TotalJobs = totalJobs
+                };
                 return response;
             }
             catch (Exception ex)
+            {
+                return null;
+            }
+        }
+        public async Task<CompanyDashboardResponse> CompanyDashboard()
+        {
+            try
+            {
+                var userId = _userService.GetUserId();
+                var totalJobs = await _context.JobPostings.Where(x => x.CompanyId == userId).CountAsync();
+                var totalApplication = await _context.JobApplications.Where(x => x.CompanyId == userId).CountAsync();
+                int pendingStudents = await _context.JobApplications.Where(x => x.CompanyId == userId && x.isSelected == SelectionStatus.Pending).CountAsync();
+                var selectedStudents = await _context.JobApplications.Where(x => x.CompanyId == userId && x.isSelected == SelectionStatus.Selected).CountAsync();
+                var rejectedStudents = await _context.JobApplications.Where(x => x.CompanyId == userId && x.isSelected == SelectionStatus.Rejected).CountAsync();
+                var result = new CompanyDashboardResponse
+                {
+                    TotalJobs = totalJobs,
+                    TotalApplication = totalApplication,
+                    SelectedStudents = selectedStudents,
+                    PendingStudents = pendingStudents,
+                    RejectedStudents = rejectedStudents,
+                };
+                return result;
+            }
+            catch (Exception)
+            {
+
+                return null;
+            }
+        }
+        public async Task<StudentDashboardResponse> StudentDashboard()
+        {
+            try
+            {
+                var userId = _userService.GetUserId();
+                var user = await _userManager.FindByIdAsync(userId.ToString());
+                var studentCourse = user?.Course;
+                var totalJobs = await _context.JobPostings.Where(x => x.UniversityId == user.UniversityId && x.Courses.Any(x => x == studentCourse)).CountAsync();
+                var totalApplication = await _context.JobApplications.Where(x => x.StudentId == userId).CountAsync();
+                var result = new StudentDashboardResponse
+                {
+                    TotalJobs = totalJobs,
+                    TotalApplication = totalApplication
+                };
+                return result;
+            }
+            catch (Exception)
             {
                 return null;
             }

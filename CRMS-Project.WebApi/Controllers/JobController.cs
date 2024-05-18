@@ -21,9 +21,9 @@ namespace CRMS_Project.WebApi.Controllers
         }
         [HttpGet("get-all-job")]
         [Authorize(Roles = UserRoles.Company + "," + UserRoles.University)]
-        public async Task<IActionResult> GetAllJobPosting()
+        public async Task<IActionResult> GetAllJobPosting([FromQuery]PaginationParameters parameters)
         {
-            var result = await _jobRepository.GetAllJobsAsync();
+            var result = await _jobRepository.GetAllJobsAsync(parameters);
             if (result == null)
             {
                 return BadRequest(new { success = false, message = "Failed to fetch Job.", data = result });
@@ -32,9 +32,9 @@ namespace CRMS_Project.WebApi.Controllers
         }
         [HttpGet("get-all-jobs-by-university/{universityId}")]
         [Authorize(Roles = UserRoles.Student)]
-        public async Task<IActionResult> GetAllApprovedJobByUniversityId(Guid universityId)
+        public async Task<IActionResult> GetAllApprovedJobByUniversityId(Guid universityId, [FromQuery] PaginationParameters parameters)
         {
-            var result = await _jobRepository.GetAllApprovedJobByUniversityId(universityId);
+            var result = await _jobRepository.GetAllApprovedJobByUniversityId(universityId,parameters);
             if (result == null)
             {
                 return BadRequest(new { success = false, message = "Failed to fetch Jobs.", data = result });

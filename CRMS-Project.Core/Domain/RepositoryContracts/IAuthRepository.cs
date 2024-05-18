@@ -22,5 +22,7 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<IdentityResult> SendForgotPasswordEmail(string email);
         Task<IdentityResult> ResetPasswordAsync(ResetPasswordRequest resetPassword);
         Task<UniversityDashboardResponse> UniversityDashboard();
+        Task<CompanyDashboardResponse> CompanyDashboard();
+        Task<StudentDashboardResponse> StudentDashboard();
     }
 }

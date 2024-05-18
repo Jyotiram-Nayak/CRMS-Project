@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace CRMS_Project.Core.DTO.Response
 {
-    public class UniversityDashboardResponse
+    public class StudentDashboardResponse
     {
-        public int SelectedStudents { get; set; }
-        public int PendingStudents { get; set; }
-        public int AllStudents { get; set; }
         public int TotalJobs { get; set; }
+        public int TotalApplication { get; set; }
     }
 }

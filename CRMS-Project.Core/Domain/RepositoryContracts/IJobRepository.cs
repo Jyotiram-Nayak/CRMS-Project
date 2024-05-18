@@ -14,10 +14,10 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
     {
         Task<int> CreateJobAsync(JobPostingRequest jobPosting);
         Task<JobPostingResponse> GetJobByIdAsync(Guid jobId);
-        Task<List<JobPostingResponse>> GetAllJobsAsync();
+        Task<List<JobPostingResponse>> GetAllJobsAsync(PaginationParameters parameters);
         Task<(int result, string errorMessage)> UpdateJobAsync(Guid jobId, JobPostingRequest jobPosting);
         Task<(int result, string errorMessage)> DeleteJobAsync(Guid jobId);
         Task<(int result, string errorMessage)> ApproveOrRejectApplicationAsync(Guid jobId, ApplicationStatus status);
-        Task<List<JobPostingResponse>> GetAllApprovedJobByUniversityId(Guid universityId);
+        Task<List<JobPostingResponse>> GetAllApprovedJobByUniversityId(Guid universityId, PaginationParameters parameters);
     }
 }

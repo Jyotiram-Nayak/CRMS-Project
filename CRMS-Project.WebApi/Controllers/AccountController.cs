@@ -136,7 +136,8 @@ namespace CRMS_Project.WebApi.Controllers
             {
                 return BadRequest(new { success = false, message = "Failed to update details" + string.Join(", ", result.Errors.Select(e => e.Description)) });
             }
-            return Ok(new { success = true, message = "Profile updated successfully.", data = result });
+            var user = await _userManager.FindByEmailAsync(updateUser.Email);
+            return Ok(new { success = true, message = "Profile updated successfully.", data =new { result,user} });
         }
 
         [HttpGet("get-all-company")]
@@ -162,10 +163,32 @@ namespace CRMS_Project.WebApi.Controllers
             return Ok(new { success = true, message = "User details fetched successfully.", data = result });
         }
         [HttpGet("university-dashboard")]
-        [Authorize]
+        [Authorize(Roles =UserRoles.University)]
         public async Task<IActionResult> GetUniversityDashboard()
         {
             var result = await _authRepository.UniversityDashboard();
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "Faild to load Dashboard." });
+            }
+            return Ok(new { success = true, message = "Dashboard load successfully.", data = result });
+        }
+        [HttpGet("company-dashboard")]
+        [Authorize(Roles = UserRoles.Company)]
+        public async Task<IActionResult> GetCompanyDashboard()
+        {
+            var result = await _authRepository.CompanyDashboard();
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "Faild to load Dashboard." });
+            }
+            return Ok(new { success = true, message = "Dashboard load successfully.", data = result });
+        }
+        [HttpGet("student-dashboard")]
+        [Authorize(Roles = UserRoles.Company)]
+        public async Task<IActionResult> GetStudentDashboard()
+        {
+            var result = await _authRepository.StudentDashboard();
             if (result == null)
             {
                 return BadRequest(new { success = false, message = "Faild to load Dashboard." });
