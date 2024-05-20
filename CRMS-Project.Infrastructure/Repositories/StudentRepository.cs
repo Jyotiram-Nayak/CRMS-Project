@@ -38,7 +38,7 @@ namespace CRMS_Project.Infrastructure.Repositories
             _context = context;
             _userService = userService;
         }
-        public async Task<List<StudentResponse>> GetAllStudentsAsync(FilterStudentRequest? filterStudent)
+        public async Task<List<StudentResponse>> GetAllStudentsAsync(PaginationParameters parameters)
         {
             try
             {
@@ -72,19 +72,53 @@ namespace CRMS_Project.Infrastructure.Repositories
                                 GraduationDate = student.GraduationDate,
                                 IsSelected = student.IsSelected
                             };
-                if (Enum.TryParse(filterStudent?.Course, out StudentCourse course))
+                if (!string.IsNullOrEmpty(parameters.FilterOn) && !string.IsNullOrEmpty(parameters.FilterQuery))
                 {
-                    query = query.Where(student => student.Course == course);
+                    switch (parameters.FilterOn.ToLower())
+                    {
+                        case "firstname":
+                            query = query.Where(student => student.FirstName.Contains(parameters.FilterQuery));
+                            break;
+                        case "city":
+                            query = query.Where(student => student.City.Contains(parameters.FilterQuery));
+                            break;
+                        case "state":
+                            query = query.Where(student => student.State.Contains(parameters.FilterQuery));
+                            break;
+                        default:
+                            break;
+                    }
                 }
 
-                if (filterStudent?.IsSelected != null)
+                if (!string.IsNullOrEmpty(parameters.SortBy))
                 {
-                    var selected = filterStudent?.IsSelected?.ToLower() == "true" ? true : false;
-                    query = query.Where(student => student.IsSelected == selected);
+                    switch (parameters.SortBy.ToLower())
+                    {
+                        case "createon":
+                            query = parameters.IsAscending ? query.OrderBy(student => student.CreateOn) : query.OrderByDescending(student => student.CreateOn);
+                            break;
+                        case "firstname":
+                            query = parameters.IsAscending ? query.OrderBy(student => student.FirstName) : query.OrderByDescending(student => student.FirstName);
+                            break;
+                        case "city":
+                            query = parameters.IsAscending ? query.OrderBy(student => student.City) : query.OrderByDescending(student => student.City);
+                            break;
+                        case "state":
+                            query = parameters.IsAscending ? query.OrderBy(student => student.State) : query.OrderByDescending(student => student.State);
+                            break;
+                        default:
+                            query = query.OrderByDescending(student => student.CreateOn);
+                            break;
+                    }
                 }
+                else
+                {
+                    query = query.OrderByDescending(student => student.CreateOn);
+                }
+                var paginatedQuery = query.Skip((parameters.Page - 1) * parameters.PageSize)
+                                                 .Take(parameters.PageSize);
 
-                // Execute query and return the result
-                var students = await query.OrderByDescending(user => user.CreateOn).ToListAsync();
+                var students = await paginatedQuery.ToListAsync();
                 return students;
             }
             catch (Exception ex)

@@ -6,7 +6,7 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
 {
     public interface IStudentRepository
     {
-        Task<List<StudentResponse>> GetAllStudentsAsync(FilterStudentRequest filterStudent);
+        Task<List<StudentResponse>> GetAllStudentsAsync(PaginationParameters parameters);
         Task<StudentResponse> GetStudentByIdAsync(Guid userId);
         Task<IdentityResult> AddStudent(StudentRequest studentRequest);
         Task<IdentityResult> DeleteStudent(Guid id);

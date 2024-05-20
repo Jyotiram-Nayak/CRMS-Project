@@ -19,9 +19,9 @@ namespace CRMS_Project.WebApi.Controllers
             _studentRepository = studentRepository;
         }
         [HttpGet("get-all-students")]
-        public async Task<IActionResult> GetAllStudents([FromQuery]FilterStudentRequest filterStudent)
+        public async Task<IActionResult> GetAllStudents([FromQuery]PaginationParameters parameters)
         {
-            var result = await _studentRepository.GetAllStudentsAsync(filterStudent);
+            var result = await _studentRepository.GetAllStudentsAsync(parameters);
             if (result == null)
             {
                 return BadRequest(new { success = false, message = "Failed to Fetchd Students.", data = result });
