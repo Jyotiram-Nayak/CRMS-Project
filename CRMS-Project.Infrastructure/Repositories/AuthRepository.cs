@@ -93,6 +93,9 @@ namespace CRMS_Project.Infrastructure.Repositories
 
         public async Task<SignInResult> LoginAsync(LoginRequest loginRequest)
         {
+            var user = await _userManager.FindByEmailAsync(loginRequest.Email);
+            if (user == null) { return SignInResult.Failed; }
+            if (user.IsApproved == false) { return SignInResult.Failed; }
             return await _signInManager.PasswordSignInAsync(loginRequest.Email, loginRequest.Password, false, false);
         }
         public async Task<IdentityResult> ConfirmEmail(Guid uid, string token)
@@ -160,11 +163,11 @@ namespace CRMS_Project.Infrastructure.Repositories
                 return null;
             }
         }
-        public async Task<List<AuthenticationResponse>> GetAllUserByRole(string role)
+        public async Task<List<AuthenticationResponse>> GetAllUserByRole(string role, PaginationParameters parameters)
         {
             try
             {
-                var user = await _userManager.Users.Where(x => x.Role == role).Select(x => new AuthenticationResponse
+                var query = _userManager.Users.Where(x => x.Role == role).Select(x => new AuthenticationResponse
                 {
                     Id = x.Id,
                     FirstName = x.FirstName,
@@ -181,14 +184,71 @@ namespace CRMS_Project.Infrastructure.Repositories
                     IsApproved = x.IsApproved,
                     CreateOn = x.CreateOn,
                     UpdateOn = x.UpdateOn,
-                }).ToListAsync();
+                });
+                if (!string.IsNullOrEmpty(parameters.FilterOn) && !string.IsNullOrEmpty(parameters.FilterQuery))
+                {
+                    var filterOn = parameters.FilterOn.Trim().ToLowerInvariant();
+                    var filterQuery = parameters.FilterQuery.Trim();
+                    switch (filterOn)
+                    {
+                        case "name":
+                            query = query.Where(application => application.FirstName.Contains(filterQuery));
+                            break;
+                        case "email":
+                            query = query.Where(application => application.Email.Contains(filterQuery));
+                            break;
+                        case "city":
+                            query = query.Where(application => application.City.Contains(filterQuery));
+                            break;
+                        case "state":
+                            query = query.Where(application => application.State.Contains(filterQuery));
+                            break;
+                        default:
+                            break;
+                    }
+                }
 
+                if (!string.IsNullOrEmpty(parameters.SortBy))
+                {
+                    switch (parameters.SortBy.ToLower())
+                    {
+                        case "name":
+                            query = parameters.IsAscending ? query.OrderBy(application => application.FirstName) : query.OrderByDescending(application => application.FirstName);
+                            break;
+                        case "email":
+                            query = parameters.IsAscending ? query.OrderBy(application => application.Email) : query.OrderByDescending(application => application.Email);
+                            break;
+                        case "city":
+                            query = parameters.IsAscending ? query.OrderBy(application => application.City) : query.OrderByDescending(application => application.City);
+                            break;
+                        case "state":
+                            query = parameters.IsAscending ? query.OrderBy(application => application.State) : query.OrderByDescending(application => application.State);
+                            break;
+                        default:
+                            query = query.OrderByDescending(application => application.CreateOn);
+                            break;
+                    }
+                }
+                else
+                {
+                    query = query.OrderByDescending(application => application.CreateOn);
+                }
+                var paginatedQuery = query.Skip((parameters.Page - 1) * parameters.PageSize)
+                                                 .Take(parameters.PageSize);
+                var user = await paginatedQuery.ToListAsync();
                 return user;
             }
             catch (Exception ex)
             {
                 return null;
             }
+        }
+        public async Task<IdentityResult> ApproveUserAsync(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null) { return IdentityResult.Failed(new IdentityError { Description = "Failed to approve user." }); }
+            user.IsApproved = !user.IsApproved;
+            return await _userManager.UpdateAsync(user);
         }
         public async Task<IdentityResult> UpdateUserAsync(UpdateUserRequest updateUser)
         {

@@ -20,7 +20,7 @@ namespace CRMS_Project.WebApi.Controllers
             _jobRepository = jobRepository;
         }
         [HttpGet("get-all-job")]
-        [Authorize(Roles = UserRoles.Company + "," + UserRoles.University)]
+        [Authorize(Roles = UserRoles.Company + "," + UserRoles.University + "," + UserRoles.Admin)]
         public async Task<IActionResult> GetAllJobPosting([FromQuery]PaginationParameters parameters)
         {
             var result = await _jobRepository.GetAllJobsAsync(parameters);

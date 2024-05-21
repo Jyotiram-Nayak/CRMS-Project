@@ -20,20 +20,14 @@ namespace CRMS_Project.Infrastructure.Repositories
     {
         private readonly AppDbContext _context;
         private readonly IUserService _userService;
-        private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public JobRepository(AppDbContext context,
             IUserService userService,
-            IWebHostEnvironment webHostEnvironment,
-            IMapper mapper,
             UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userService = userService;
-            _webHostEnvironment = webHostEnvironment;
-            _mapper = mapper;
             _userManager = userManager;
         }
 
@@ -98,49 +92,54 @@ namespace CRMS_Project.Infrastructure.Repositories
                                 Website = user.Website,
                                 Bio = user.Bio,
                                 Address = user.Address,
+                                Image = user.Image,
                             };
                 if (!string.IsNullOrEmpty(parameters.FilterOn) && !string.IsNullOrEmpty(parameters.FilterQuery))
                 {
-                    if (parameters.FilterOn.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                    switch (parameters.FilterOn.ToLower())
                     {
-                        query = query.Where(job => job.Title.Contains(parameters.FilterQuery));
-                    }
-                    else if (parameters.FilterOn.Equals("FirstName", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = query.Where(job => job.FirstName.Contains(parameters.FilterQuery));
-                        query = query.Where(job => job.LastName.Contains(parameters.FilterQuery));
-                    }
-                    else if (parameters.FilterOn.Equals("City", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = query.Where(job => job.City.Contains(parameters.FilterQuery));
-                    }
-                    else if (parameters.FilterOn.Equals("State", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = query.Where(job => job.State.Contains(parameters.FilterQuery));
+                        case "firstname":
+                            query = query.Where(job => job.FirstName.Contains(parameters.FilterQuery));
+                            break;
+                        case "email":
+                            query = query.Where(job => job.Email.Contains(parameters.FilterQuery));
+                            break;
+                        case "title":
+                            query = query.Where(job => job.Title.Contains(parameters.FilterQuery));
+                            break;
+                        case "city":
+                            query = query.Where(job => job.City.Contains(parameters.FilterQuery));
+                            break;
+                        case "state":
+                            query = query.Where(job => job.State.Contains(parameters.FilterQuery));
+                            break;
+                        default:
+                            break;
                     }
                 }
 
                 if (!string.IsNullOrEmpty(parameters.SortBy))
                 {
-                    if (parameters.SortBy.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                    switch (parameters.SortBy.ToLower())
                     {
-                        query = parameters.IsAscending ? query.OrderBy(job => job.Title) : query.OrderByDescending(job => job.Title);
-                    }
-                    else if (parameters.SortBy.Equals("PostedDate", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = parameters.IsAscending ? query.OrderBy(job => job.PostedDate) : query.OrderByDescending(job => job.PostedDate);
-                    }
-                    else if (parameters.SortBy.Equals("FirstName", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = parameters.IsAscending ? query.OrderBy(job => job.FirstName) : query.OrderByDescending(job => job.PostedDate);
-                    }
-                    else if (parameters.SortBy.Equals("City", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = parameters.IsAscending ? query.OrderBy(job => job.City) : query.OrderByDescending(job => job.PostedDate);
-                    }
-                    else if (parameters.SortBy.Equals("State", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = parameters.IsAscending ? query.OrderBy(job => job.State) : query.OrderByDescending(job => job.PostedDate);
+                        case "posteddate":
+                            query = parameters.IsAscending ? query.OrderBy(job => job.PostedDate) : query.OrderByDescending(job => job.PostedDate);
+                            break;
+                        case "title":
+                            query = parameters.IsAscending ? query.OrderBy(job => job.Title) : query.OrderByDescending(job => job.Title);
+                            break;
+                        case "firstname":
+                            query = parameters.IsAscending ? query.OrderBy(job => job.FirstName) : query.OrderByDescending(job => job.FirstName);
+                            break;
+                        case "city":
+                            query = parameters.IsAscending ? query.OrderBy(job => job.City) : query.OrderByDescending(job => job.City);
+                            break;
+                        case "state":
+                            query = parameters.IsAscending ? query.OrderBy(job => job.State) : query.OrderByDescending(job => job.State);
+                            break;
+                        default:
+                            query = query.OrderByDescending(job => job.CreateOn);
+                            break;
                     }
                 }
                 else
@@ -178,7 +177,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                 }).FirstOrDefaultAsync();
                 return jobPlacement;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return null;
             }
@@ -240,7 +239,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                 var result = await _context.SaveChangesAsync();
                 return (result, result > 0 ? "" : "Error occurred while saving the job application.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return (0, "Error occurred while saving the job application.");
             }
@@ -283,50 +282,55 @@ namespace CRMS_Project.Infrastructure.Repositories
                                 Website = user.Website,
                                 Bio = user.Bio,
                                 Address = user.Address,
+                                Image = user.Image,
                             };
 
                 if (!string.IsNullOrEmpty(parameters.FilterOn) && !string.IsNullOrEmpty(parameters.FilterQuery))
                 {
-                    if (parameters.FilterOn.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                    switch (parameters.FilterOn.ToLower())
                     {
-                        query = query.Where(job => job.Title.Contains(parameters.FilterQuery));
-                    }
-                    else if (parameters.FilterOn.Equals("FirstName", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = query.Where(job => job.FirstName.Contains(parameters.FilterQuery));
-                        query = query.Where(job => job.LastName.Contains(parameters.FilterQuery));
-                    }
-                    else if (parameters.FilterOn.Equals("City", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = query.Where(job => job.City.Contains(parameters.FilterQuery));
-                    }
-                    else if (parameters.FilterOn.Equals("State", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = query.Where(job => job.State.Contains(parameters.FilterQuery));
+                        case "firstname":
+                            query = query.Where(job => job.FirstName.Contains(parameters.FilterQuery));
+                            break;
+                        case "email":
+                            query = query.Where(job => job.Email.Contains(parameters.FilterQuery));
+                            break;
+                        case "title":
+                            query = query.Where(job => job.Title.Contains(parameters.FilterQuery));
+                            break;
+                        case "city":
+                            query = query.Where(job => job.City.Contains(parameters.FilterQuery));
+                            break;
+                        case "state":
+                            query = query.Where(job => job.State.Contains(parameters.FilterQuery));
+                            break;
+                        default:
+                            break;
                     }
                 }
 
                 if (!string.IsNullOrEmpty(parameters.SortBy))
                 {
-                    if (parameters.SortBy.Equals("Title", StringComparison.OrdinalIgnoreCase))
+                    switch (parameters.SortBy.ToLower())
                     {
-                        query = parameters.IsAscending ? query.OrderBy(job => job.Title) : query.OrderByDescending(job => job.Title);
-                    }
-                    else if (parameters.SortBy.Equals("PostedDate", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = parameters.IsAscending ? query.OrderBy(job => job.PostedDate) : query.OrderByDescending(job => job.PostedDate);
-                    }
-                    else if (parameters.SortBy.Equals("FirstName", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = parameters.IsAscending ? query.OrderBy(job => job.FirstName) : query.OrderByDescending(job => job.PostedDate);
-                    }
-                    else if (parameters.SortBy.Equals("City", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = parameters.IsAscending ? query.OrderBy(job => job.City) : query.OrderByDescending(job => job.PostedDate);
-                    }
-                    else if (parameters.SortBy.Equals("State", StringComparison.OrdinalIgnoreCase))
-                    {
-                        query = parameters.IsAscending ? query.OrderBy(job => job.State) : query.OrderByDescending(job => job.PostedDate);
+                        case "posteddate":
+                            query = parameters.IsAscending ? query.OrderBy(job => job.PostedDate) : query.OrderByDescending(job => job.PostedDate);
+                            break;
+                        case "title":
+                            query = parameters.IsAscending ? query.OrderBy(job => job.Title) : query.OrderByDescending(job => job.Title);
+                            break;
+                        case "firstname":
+                            query = parameters.IsAscending ? query.OrderBy(job => job.FirstName) : query.OrderByDescending(job => job.FirstName);
+                            break;
+                        case "city":
+                            query = parameters.IsAscending ? query.OrderBy(job => job.City) : query.OrderByDescending(job => job.City);
+                            break;
+                        case "state":
+                            query = parameters.IsAscending ? query.OrderBy(job => job.State) : query.OrderByDescending(job => job.State);
+                            break;
+                        default:
+                            query = query.OrderByDescending(job => job.CreateOn);
+                            break;
                     }
                 }
                 else

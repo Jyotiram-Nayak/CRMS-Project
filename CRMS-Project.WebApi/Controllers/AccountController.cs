@@ -139,12 +139,22 @@ namespace CRMS_Project.WebApi.Controllers
             var user = await _userManager.FindByEmailAsync(updateUser.Email);
             return Ok(new { success = true, message = "Profile updated successfully.", data =new { result,user} });
         }
-
+        [HttpPut("approve-user/{userId}")]
+        [Authorize(Roles =UserRoles.Admin)]
+        public async Task<IActionResult> ApproveUser(Guid userId)
+        {
+            var result = await _authRepository.ApproveUserAsync(userId);
+            if (!result.Succeeded)
+            {
+                return BadRequest(new { success = false, message = "Failed to update user" + string.Join(", ", result.Errors.Select(e => e.Description)) });
+            }
+            return Ok(new { success = true, message = "User updated successfully." });
+        }
         [HttpGet("get-all-company")]
         [Authorize]
-        public async Task<IActionResult> GetAllCompany()
+        public async Task<IActionResult> GetAllCompany([FromQuery]PaginationParameters parameters)
         {
-            var result = await _authRepository.GetAllUserByRole(UserRoles.Company.ToLower());
+            var result = await _authRepository.GetAllUserByRole(UserRoles.Company.ToLower(),parameters);
             if (result == null)
             {
                 return BadRequest(new { success = false, message = "Company not found." });
@@ -153,9 +163,9 @@ namespace CRMS_Project.WebApi.Controllers
         }
         [HttpGet("get-all-university")]
         [Authorize]
-        public async Task<IActionResult> GetAllUniversity()
+        public async Task<IActionResult> GetAllUniversity([FromQuery]PaginationParameters parameters)
         {
-            var result = await _authRepository.GetAllUserByRole(UserRoles.University.ToLower());
+            var result = await _authRepository.GetAllUserByRole(UserRoles.University.ToLower(),parameters);
             if (result == null)
             {
                 return BadRequest(new { success = false, message = "University not found." });

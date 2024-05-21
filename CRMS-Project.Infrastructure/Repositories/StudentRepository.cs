@@ -70,20 +70,39 @@ namespace CRMS_Project.Infrastructure.Repositories
                                 MaritalStatus = student.MaritalStatus,
                                 JoiningDate = student.JoiningDate,
                                 GraduationDate = student.GraduationDate,
-                                IsSelected = student.IsSelected
+                                IsSelected = student.IsSelected,
+                                Image=user.Image
                             };
                 if (!string.IsNullOrEmpty(parameters.FilterOn) && !string.IsNullOrEmpty(parameters.FilterQuery))
                 {
-                    switch (parameters.FilterOn.ToLower())
+                    var filterOn = parameters.FilterOn.Trim().ToLowerInvariant();
+                    var filterQuery = parameters.FilterQuery.Trim();
+                    switch (filterOn)
                     {
                         case "firstname":
-                            query = query.Where(student => student.FirstName.Contains(parameters.FilterQuery));
+                            query = query.Where(student => student.FirstName.Contains(filterQuery));
+                            break;
+                        case "rollno":
+                            query = query.Where(student => student.RollNo.Contains(filterQuery));
+                            break;
+                        case "email":
+                            query = query.Where(student => student.Email.Contains(filterQuery));
                             break;
                         case "city":
-                            query = query.Where(student => student.City.Contains(parameters.FilterQuery));
+                            query = query.Where(student => student.City.Contains(filterQuery));
                             break;
                         case "state":
-                            query = query.Where(student => student.State.Contains(parameters.FilterQuery));
+                            query = query.Where(student => student.State.Contains(filterQuery));
+                            break;
+                        case "course":
+                            if (Enum.TryParse(filterQuery, out StudentCourse course))
+                            {
+                                query = query.Where(student => student.Course == course);
+                            }
+                            break;
+                        case "isselected":
+                            var selected = filterQuery == "true" ? true : false;
+                            query = query.Where(student => student.IsSelected == selected);
                             break;
                         default:
                             break;
@@ -94,11 +113,11 @@ namespace CRMS_Project.Infrastructure.Repositories
                 {
                     switch (parameters.SortBy.ToLower())
                     {
-                        case "createon":
-                            query = parameters.IsAscending ? query.OrderBy(student => student.CreateOn) : query.OrderByDescending(student => student.CreateOn);
-                            break;
                         case "firstname":
                             query = parameters.IsAscending ? query.OrderBy(student => student.FirstName) : query.OrderByDescending(student => student.FirstName);
+                            break;
+                        case "createon":
+                            query = parameters.IsAscending ? query.OrderBy(student => student.CreateOn) : query.OrderByDescending(student => student.CreateOn);
                             break;
                         case "city":
                             query = parameters.IsAscending ? query.OrderBy(student => student.City) : query.OrderByDescending(student => student.City);
@@ -172,7 +191,7 @@ namespace CRMS_Project.Infrastructure.Repositories
             {
                 ApplicationUser newUser = new ApplicationUser
                 {
-                    //Id = Guid.NewGuid(),
+                    Id = Guid.NewGuid(),
                     UniversityId = _userService.GetUserId(),
                     FirstName = studentRequest.FirstName,
                     LastName = studentRequest.LastName,
@@ -305,7 +324,6 @@ namespace CRMS_Project.Infrastructure.Repositories
             IdentityResult result = new IdentityResult();
             try
             {
-                //string tempFilePath = "temp.xlsx"; // Temporary file path on your server
                 string fileName = "temp.xlsx"; // Temporary file name
                 string rootPath = Directory.GetCurrentDirectory(); // Get the root directory path
                 string filePath = Path.Combine(rootPath, "wwwroot", fileName);

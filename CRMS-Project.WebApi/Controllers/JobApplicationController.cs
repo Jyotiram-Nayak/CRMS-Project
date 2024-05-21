@@ -30,10 +30,10 @@ namespace CRMS_Project.WebApi.Controllers
             return Ok(new { success = true, message = "Job apply successfully...", data = result });
         }
         [HttpGet("get-job-applications")]
-        [Authorize(Roles = UserRoles.Student+","+ UserRoles.Company+","+ UserRoles.University)]
-        public async Task<IActionResult> GetAllJobs()
+        [Authorize]
+        public async Task<IActionResult> GetAllJobs([FromQuery]PaginationParameters parameters)
         {
-            var result = await _jobApplicationRepository.GetAllJobApplicationAsync();
+            var result = await _jobApplicationRepository.GetAllJobApplicationAsync(parameters);
             if (result == null)
             {
                 return BadRequest(new { success = false, message = "Failed to fetch job application.", data = result });

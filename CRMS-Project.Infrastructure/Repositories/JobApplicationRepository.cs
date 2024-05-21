@@ -33,7 +33,7 @@ namespace CRMS_Project.Infrastructure.Repositories
             _userService = userService;
             _userManager = userManager;
         }
-        public async Task<List<JobApplicationResponse>> GetAllJobApplicationAsync()
+        public async Task<List<JobApplicationResponse>> GetAllJobApplicationAsync(PaginationParameters parameters)
         {
             try
             {
@@ -58,12 +58,12 @@ namespace CRMS_Project.Infrastructure.Repositories
                 {
                     jobApplicationsQuery = jobApplicationsQuery.Where(x => x.UniversityId == userId);
                 }
-                var jobApplications = await jobApplicationsQuery
+                var query = jobApplicationsQuery
                     .Select(x => new JobApplicationResponse
                     {
                         ApplicationId = x.ApplicationId,
                         JobId = x.JobId,
-                        StudentId = userId,
+                        StudentId = x.StudentId,
                         CompanyId = x.CompanyId,
                         UniversityId = x.UniversityId,
                         AppliedDate = x.AppliedDate,
@@ -76,6 +76,9 @@ namespace CRMS_Project.Infrastructure.Repositories
                         JobTitle = x.JobPosting.Title,
                         StudentName = x.Student.FirstName + " " + x.Student.LastName,
                         StudentEmail = x.Student.Email,
+                        Course = x.Student.Course,
+                        City = x.Student.City,
+                        State = x.Student.State,
                         CompanyName = x.Company.FirstName + " " + x.Company.LastName,
                         CompanyEmail = x.Company.Email,
                         UniversityName = x.University.FirstName + " " + x.University.LastName,
@@ -83,8 +86,64 @@ namespace CRMS_Project.Infrastructure.Repositories
                         AssessmentCompletionDate = userRole == UserRoles.Company ? x.AssessmentCompletionDate : null,
                         AssessmentScore = userRole == UserRoles.Company ? x.AssessmentScore : null,
                         AssessmentFeedback = userRole == UserRoles.Company ? x.AssessmentFeedback : null,
-                    }).ToListAsync();
+                    });
+                if (!string.IsNullOrEmpty(parameters.FilterOn) && !string.IsNullOrEmpty(parameters.FilterQuery))
+                {
+                    var filterOn = parameters.FilterOn.Trim().ToLowerInvariant();
+                    var filterQuery = parameters.FilterQuery.Trim();
+                    switch (filterOn)
+                    {
+                        case "studentname":
+                            query = query.Where(application => application.StudentName.Contains(filterQuery));
+                            break;
+                        case "email":
+                            query = query.Where(application => application.StudentEmail.Contains(filterQuery));
+                            break;
+                        case "course":
+                            if (Enum.TryParse(filterQuery, out StudentCourse course))
+                            {
+                                query = query.Where(student => student.Course == course);
+                            }
+                            break;
+                        case "city":
+                            query = query.Where(application => application.City.Contains(filterQuery));
+                            break;
+                        case "state":
+                            query = query.Where(application => application.State.Contains(filterQuery));
+                            break;
+                        default:
+                            break;
+                    }
+                }
 
+                if (!string.IsNullOrEmpty(parameters.SortBy))
+                {
+                    switch (parameters.SortBy.ToLower())
+                    {
+                        case "studentname":
+                            query = parameters.IsAscending ? query.OrderBy(application => application.StudentName) : query.OrderByDescending(application => application.StudentName);
+                            break;
+                        case "applieddate":
+                            query = parameters.IsAscending ? query.OrderBy(application => application.AppliedDate) : query.OrderByDescending(application => application.AppliedDate);
+                            break;
+                        case "interviewdate":
+                            query = parameters.IsAscending ? query.OrderBy(application => application.InterviewDate) : query.OrderByDescending(application => application.InterviewDate);
+                            break;
+                        case "completiondate":
+                            query = parameters.IsAscending ? query.OrderBy(application => application.AssessmentCompletionDate) : query.OrderByDescending(application => application.AssessmentCompletionDate);
+                            break;
+                        default:
+                            query = query.OrderByDescending(application => application.CreateOn);
+                            break;
+                    }
+                }
+                else
+                {
+                    query = query.OrderByDescending(application => application.CreateOn);
+                }
+                var paginatedQuery = query.Skip((parameters.Page - 1) * parameters.PageSize)
+                                                 .Take(parameters.PageSize);
+                var jobApplications = await paginatedQuery.ToListAsync();
                 return jobApplications;
             }
             catch (Exception)

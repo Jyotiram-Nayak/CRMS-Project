@@ -25,6 +25,9 @@ namespace CRMS_Project.Core.DTO.Response
         public DateTime? InterviewDate { get; set; }
         [Required]
         public SelectionStatus isSelected { get; set; }
+        public StudentCourse? Course { get; set; }
+        public string City { get; set; }
+        public string State { get; set; }
         public string Resume { get; set; }
         public string? AssessmentLink { get; set; }
         public bool? AssessmentCompleted { get; set; }

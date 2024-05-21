@@ -17,7 +17,8 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<IdentityResult> ConfirmEmail(Guid uid, string token);
         Task<IdentityResult> ChangePasswordAsync(ChangePasswordRequest changePassword);
         Task<AuthenticationResponse> GetUserByIdAsunc(Guid? userId);
-        Task<List<AuthenticationResponse>> GetAllUserByRole(string role);
+        Task<List<AuthenticationResponse>> GetAllUserByRole(string role,PaginationParameters parameters);
+        Task<IdentityResult> ApproveUserAsync(Guid userId);
         Task<IdentityResult> UpdateUserAsync(UpdateUserRequest updateUser);
         Task<IdentityResult> SendForgotPasswordEmail(string email);
         Task<IdentityResult> ResetPasswordAsync(ResetPasswordRequest resetPassword);
