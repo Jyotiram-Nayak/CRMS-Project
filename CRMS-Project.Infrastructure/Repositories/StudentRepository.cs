@@ -71,7 +71,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                                 JoiningDate = student.JoiningDate,
                                 GraduationDate = student.GraduationDate,
                                 IsSelected = student.IsSelected,
-                                Image=user.Image
+                                Image = user.Image
                             };
                 if (!string.IsNullOrEmpty(parameters.FilterOn) && !string.IsNullOrEmpty(parameters.FilterQuery))
                 {
@@ -322,6 +322,8 @@ namespace CRMS_Project.Infrastructure.Repositories
         public async Task<IdentityResult> ImportExcelFile(string fileUrl)
         {
             IdentityResult result = new IdentityResult();
+            int totalRecords = 0;
+            int errorCount = 0;
             try
             {
                 string fileName = "temp.xlsx"; // Temporary file name
@@ -342,65 +344,78 @@ namespace CRMS_Project.Infrastructure.Repositories
                             reader.Read();
                             while (reader.Read())
                             {
-                                ApplicationUser newUser = new ApplicationUser
+                                totalRecords++;
+                                try
                                 {
-                                    Id = Guid.NewGuid(),
-                                    UniversityId = _userService.GetUserId(),
-                                    FirstName = reader.GetValue(1)?.ToString() ?? "",
-                                    LastName = reader.GetValue(2)?.ToString() ?? "",
-                                    Email = reader.GetValue(3)?.ToString() ?? "",
-                                    PhoneNumber = reader.GetValue(4)?.ToString() ?? "",
-                                    IsApproved = true,
-                                    Address = reader.GetValue(12)?.ToString() ?? "",
-                                    City = reader.GetValue(13)?.ToString() ?? "",
-                                    State = reader.GetValue(14)?.ToString() ?? "",
-                                    UserName = reader.GetValue(3)?.ToString() ?? "",
-                                    CreateOn = DateTime.Now,
-                                    Role = "student",
-                                };
-                                // parse course
-                                if (Enum.TryParse<StudentCourse>(reader.GetValue(11)?.ToString(), out var course))
-                                {
-                                    newUser.Course = course;
-                                }
-                                var password = reader.GetValue(5).ToString() ?? "";
-                                result = await _userManager.CreateAsync(newUser, password);
-                                if (!result.Succeeded)
-                                {
-                                    return result;
-                                }
-                                await _userManager.AddToRoleAsync(newUser, UserRoles.Student);
-                                await _emailService.SendEmailConfirmationAsync(newUser);
+                                    var email = reader.GetValue(3)?.ToString();
+                                    if (string.IsNullOrEmpty(email) || await _userManager.FindByEmailAsync(email) != null)
+                                    {
+                                        continue; // Skip this record if email is null or already exists
+                                    }
+                                    ApplicationUser newUser = new ApplicationUser
+                                    {
+                                        Id = Guid.NewGuid(),
+                                        UniversityId = _userService.GetUserId(),
+                                        FirstName = reader.GetValue(1)?.ToString() ?? "",
+                                        LastName = reader.GetValue(2)?.ToString() ?? "",
+                                        Email = reader.GetValue(3)?.ToString() ?? "",
+                                        PhoneNumber = reader.GetValue(4)?.ToString() ?? "",
+                                        IsApproved = true,
+                                        Address = reader.GetValue(12)?.ToString() ?? "",
+                                        City = reader.GetValue(13)?.ToString() ?? "",
+                                        State = reader.GetValue(14)?.ToString() ?? "",
+                                        UserName = reader.GetValue(3)?.ToString() ?? "",
+                                        CreateOn = DateTime.Now,
+                                        Role = "student",
+                                    };
+                                    // parse course
+                                    if (Enum.TryParse<StudentCourse>(reader.GetValue(11)?.ToString(), out var course))
+                                    {
+                                        newUser.Course = course;
+                                    }
+                                    var password = reader.GetValue(5).ToString() ?? "";
+                                    result = await _userManager.CreateAsync(newUser, password);
+                                    if (result.Succeeded)
+                                    {
+                                        await _userManager.AddToRoleAsync(newUser, UserRoles.Student);
+                                        await _emailService.SendEmailConfirmationAsync(newUser);
 
-                                var student = new Student
-                                {
-                                    StudentId = Guid.NewGuid(),
-                                    UserId = newUser.Id,
-                                    RollNo = reader.GetValue(7)?.ToString() ?? "",
-                                    IsSelected = false,
-                                };
-                                if (Enum.TryParse<GenderOptions>(reader.GetValue(9)?.ToString(), out var gender))
-                                {
-                                    student.Gender = gender;
+                                        var student = new Student
+                                        {
+                                            StudentId = Guid.NewGuid(),
+                                            UserId = newUser.Id,
+                                            RollNo = reader.GetValue(7)?.ToString() ?? "",
+                                            IsSelected = false,
+                                        };
+                                        if (Enum.TryParse<GenderOptions>(reader.GetValue(9)?.ToString(), out var gender))
+                                        {
+                                            student.Gender = gender;
+                                        }
+                                        if (Enum.TryParse<MaritalOptions>(reader.GetValue(10)?.ToString(), out var maritalStatus))
+                                        {
+                                            student.MaritalStatus = maritalStatus;
+                                        }
+                                        if (DateTime.TryParse(reader.GetValue(8)?.ToString(), out var dob))
+                                        {
+                                            student.Dob = dob;
+                                        }
+                                        if (DateTime.TryParse(reader.GetValue(15)?.ToString(), out var joiningDate))
+                                        {
+                                            student.JoiningDate = joiningDate;
+                                        }
+                                        if (DateTime.TryParse(reader.GetValue(16)?.ToString(), out var graduationDate))
+                                        {
+                                            student.GraduationDate = graduationDate;
+                                        }
+                                        _context.Students.Add(student);
+                                        await _context.SaveChangesAsync();
+                                    }
                                 }
-                                if (Enum.TryParse<MaritalOptions>(reader.GetValue(10)?.ToString(), out var maritalStatus))
+                                catch (Exception)
                                 {
-                                    student.MaritalStatus = maritalStatus;
+                                    errorCount++;
+                                    continue;
                                 }
-                                if (DateTime.TryParse(reader.GetValue(8)?.ToString(), out var dob))
-                                {
-                                    student.Dob = dob;
-                                }
-                                if (DateTime.TryParse(reader.GetValue(15)?.ToString(), out var joiningDate))
-                                {
-                                    student.JoiningDate = joiningDate;
-                                }
-                                if (DateTime.TryParse(reader.GetValue(16)?.ToString(), out var graduationDate))
-                                {
-                                    student.GraduationDate = graduationDate;
-                                }
-                                _context.Students.Add(student);
-                                await _context.SaveChangesAsync();
                             }
                         } while (reader.NextResult());
                     }

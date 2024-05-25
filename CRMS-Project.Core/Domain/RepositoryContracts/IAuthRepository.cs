@@ -25,5 +25,6 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<UniversityDashboardResponse> UniversityDashboard();
         Task<CompanyDashboardResponse> CompanyDashboard();
         Task<StudentDashboardResponse> StudentDashboard();
+        Task<AdminDashboardResponse> AdminDashboard();
     }
 }

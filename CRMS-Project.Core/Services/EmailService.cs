@@ -68,6 +68,24 @@ namespace CRMS_Project.Core.Services
                 await SendEmailAsync(emailMessage);
             }
         }
+
+        public async Task SendContactusEmailAsync(ApplicationUser user)
+        {
+
+            EmailMessage emailMessage = new EmailMessage
+            {
+                ToEmails = new List<string>() { user.Email },
+                PlaceHolders = new List<KeyValuePair<string, string>>()
+                    {
+                        new KeyValuePair<string, string>("{{UserName}}",user.Email),
+                        new KeyValuePair<string, string>("{{Link}}",user.FirstName)
+                    }
+            };
+            emailMessage.Subject = UpdatePlaceHolders("Hellow {{UserName}}! reset your password", emailMessage.PlaceHolders);
+            emailMessage.Body = UpdatePlaceHolders(GetEmailBody("ForgotPassword"), emailMessage.PlaceHolders);
+            await SendEmailAsync(emailMessage);
+
+        }
         /// <summary>
         /// Get email body from templates.
         /// </summary>

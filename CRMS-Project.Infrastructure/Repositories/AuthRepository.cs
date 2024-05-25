@@ -2,6 +2,7 @@
 using CRMS_Project.Core.Domain.Identity;
 using CRMS_Project.Core.Domain.RepositoryContracts;
 using CRMS_Project.Core.DTO;
+using CRMS_Project.Core.DTO.Email;
 using CRMS_Project.Core.DTO.Request;
 using CRMS_Project.Core.DTO.Response;
 using CRMS_Project.Core.Enums;
@@ -10,6 +11,7 @@ using CRMS_Project.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace CRMS_Project.Infrastructure.Repositories
 {
@@ -42,6 +44,17 @@ namespace CRMS_Project.Infrastructure.Repositories
             _student = student;
             _context = context;
         }
+        /// <summary>
+        /// Register a new user as University and Company
+        /// </summary>
+        /// <param name="user">the registration details of the user</param>
+        /// <returns>
+        /// An <see cref="IdentityResult"/> indicating the success or failure of the registration process.
+        /// </returns>
+        /// <remarks>
+        /// This method first checks if the user email already exists. If not, it creates a new user,
+        /// assigns the appropriate role based on the provided user role, and sends an email confirmation.
+        /// </remarks>
         public async Task<IdentityResult> RegisterUserAsync(RegisterRequest user)
         {
             try
@@ -90,7 +103,17 @@ namespace CRMS_Project.Infrastructure.Repositories
                 return IdentityResult.Failed(new IdentityError { Description = ex.Message });
             }
         }
-
+        /// <summary>
+        /// Login
+        /// </summary>
+        /// <param name="loginRequest"></param>
+        /// <returns>
+        /// An <see cref="IdentityResult"/> indicating the success or failure of the login process.
+        /// </returns>
+        /// <remarks>
+        /// This method first checks if the user email already exists. If not, it creates a new user,
+        /// assigns the appropriate role based on the provided user role, and sends an email confirmation.
+        /// </remarks>
         public async Task<SignInResult> LoginAsync(LoginRequest loginRequest)
         {
             var user = await _userManager.FindByEmailAsync(loginRequest.Email);
@@ -378,21 +401,78 @@ namespace CRMS_Project.Infrastructure.Repositories
         {
             try
             {
+                //var userId = _userService.GetUserId();
+                //var user = await _userManager.FindByIdAsync(userId.ToString());
+                //var studentCourse = user?.Course;
+                //var totalJobs = await _context.JobPostings.Where(x => x.UniversityId == user.UniversityId && x.Courses.Any(x => x == studentCourse)).CountAsync();
+                //var totalApplication = await _context.JobApplications.Where(x => x.StudentId == userId).CountAsync();
+                //var result = new StudentDashboardResponse
+                //{
+                //    TotalJobs = totalJobs,
+                //    TotalApplication = totalApplication
+                //};
                 var userId = _userService.GetUserId();
                 var user = await _userManager.FindByIdAsync(userId.ToString());
+
                 var studentCourse = user?.Course;
-                var totalJobs = await _context.JobPostings.Where(x => x.UniversityId == user.UniversityId && x.Courses.Any(x => x == studentCourse)).CountAsync();
-                var totalApplication = await _context.JobApplications.Where(x => x.StudentId == userId).CountAsync();
-                var result = new StudentDashboardResponse
+
+                // Combine multiple queries into a single query using GroupBy and Count
+                var dashboardData = await _context.JobPostings
+                    .Where(x => x.UniversityId == user.UniversityId && x.Courses.Contains((StudentCourse)studentCourse))
+                    .GroupBy(x => 1) // Group by a constant to count all records
+                    .Select(g => new
+                    {
+                        TotalJobs = g.Count(),
+                        TotalApplication = _context.JobApplications.Count(x => x.StudentId == userId)
+                    })
+                    .FirstOrDefaultAsync();
+                if (dashboardData == null) { return null; }
+                return new StudentDashboardResponse
                 {
-                    TotalJobs = totalJobs,
-                    TotalApplication = totalApplication
+                    TotalJobs = dashboardData.TotalJobs,
+                    TotalApplication = dashboardData.TotalApplication
+                };
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+        public async Task<AdminDashboardResponse> AdminDashboard()
+        {
+            try
+            {
+                var userId = _userService.GetUserId();
+                var totalUniversities = _userManager.Users.Where(x => x.Role == UserRoles.University.ToLower()).Count();
+                var totalCompanies = _userManager.Users.Where(x => x.Role == UserRoles.Company.ToLower()).Count();
+                var totalStudents = _userManager.Users.Where(x => x.Role == UserRoles.Student.ToLower()).Count();
+                var result = new AdminDashboardResponse
+                {
+                    TotalUniversities = totalUniversities,
+                    TotalCompanies = totalCompanies,
+                    TotalStudents = totalStudents
                 };
                 return result;
             }
             catch (Exception)
             {
-                return null;
+
+                throw;
+            }
+        }
+
+        public async Task<IdentityResult> SendContactusMail(EmailMessage emialMessage)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(_userService.GetUserId().ToString());
+                if (user == null) { return IdentityResult.Failed(new IdentityError { Description = "User not found" }); }
+                await _emailService.SendForgotEmailAsync(user);
+                return IdentityResult.Success;
+            }
+            catch (Exception ex)
+            {
+                return IdentityResult.Failed(new IdentityError { Description = ex.Message });
             }
         }
     }

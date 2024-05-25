@@ -2,6 +2,7 @@
 using CRMS_Project.Core.Domain.Identity;
 using CRMS_Project.Core.Domain.RepositoryContracts;
 using CRMS_Project.Core.DTO;
+using CRMS_Project.Core.DTO.Email;
 using CRMS_Project.Core.DTO.Request;
 using CRMS_Project.Core.ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
@@ -195,7 +196,7 @@ namespace CRMS_Project.WebApi.Controllers
             return Ok(new { success = true, message = "Dashboard load successfully.", data = result });
         }
         [HttpGet("student-dashboard")]
-        [Authorize(Roles = UserRoles.Company)]
+        [Authorize(Roles = UserRoles.Student)]
         public async Task<IActionResult> GetStudentDashboard()
         {
             var result = await _authRepository.StudentDashboard();
@@ -204,6 +205,27 @@ namespace CRMS_Project.WebApi.Controllers
                 return BadRequest(new { success = false, message = "Faild to load Dashboard." });
             }
             return Ok(new { success = true, message = "Dashboard load successfully.", data = result });
+        }
+        [HttpGet("admin-dashboard")]
+        [Authorize(Roles = UserRoles.Admin)]
+        public async Task<IActionResult> GetAdminDashboard()
+        {
+            var result = await _authRepository.AdminDashboard();
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "Faild to load Dashboard." });
+            }
+            return Ok(new { success = true, message = "Dashboard load successfully.", data = result });
+        }
+        [HttpPatch("contact-us")]
+        public async Task<IActionResult> SendMailContactUs(EmailMessage emailMessage)
+        {
+            var result = await _authRepository.StudentDashboard();
+            if (result == null)
+            {
+                return BadRequest(new { success = false, message = "Faild to send mail." });
+            }
+            return Ok(new { success = true, message = "Mail send successfully.", data = result });
         }
     }
 }
