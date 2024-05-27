@@ -401,16 +401,6 @@ namespace CRMS_Project.Infrastructure.Repositories
         {
             try
             {
-                //var userId = _userService.GetUserId();
-                //var user = await _userManager.FindByIdAsync(userId.ToString());
-                //var studentCourse = user?.Course;
-                //var totalJobs = await _context.JobPostings.Where(x => x.UniversityId == user.UniversityId && x.Courses.Any(x => x == studentCourse)).CountAsync();
-                //var totalApplication = await _context.JobApplications.Where(x => x.StudentId == userId).CountAsync();
-                //var result = new StudentDashboardResponse
-                //{
-                //    TotalJobs = totalJobs,
-                //    TotalApplication = totalApplication
-                //};
                 var userId = _userService.GetUserId();
                 var user = await _userManager.FindByIdAsync(userId.ToString());
 
@@ -426,11 +416,10 @@ namespace CRMS_Project.Infrastructure.Repositories
                         TotalApplication = _context.JobApplications.Count(x => x.StudentId == userId)
                     })
                     .FirstOrDefaultAsync();
-                if (dashboardData == null) { return null; }
                 return new StudentDashboardResponse
                 {
-                    TotalJobs = dashboardData.TotalJobs,
-                    TotalApplication = dashboardData.TotalApplication
+                    TotalJobs = dashboardData != null ? dashboardData.TotalJobs : 0,
+                    TotalApplication = dashboardData != null ? dashboardData.TotalApplication : 0
                 };
             }
             catch (Exception)
@@ -461,13 +450,13 @@ namespace CRMS_Project.Infrastructure.Repositories
             }
         }
 
-        public async Task<IdentityResult> SendContactusMail(EmailMessage emialMessage)
+        public async Task<IdentityResult> SendContactusMail(ContactUsRequest contact)
         {
             try
             {
-                var user = await _userManager.FindByIdAsync(_userService.GetUserId().ToString());
-                if (user == null) { return IdentityResult.Failed(new IdentityError { Description = "User not found" }); }
-                await _emailService.SendForgotEmailAsync(user);
+                var user =await _userManager.Users.Where(x => x.Role == UserRoles.Admin.ToLower()).FirstOrDefaultAsync();
+                //if (user == null) { return IdentityResult.Failed(new IdentityError { Description = "User not found" }); }
+                await _emailService.SendContactusEmailAsync(user,contact);
                 return IdentityResult.Success;
             }
             catch (Exception ex)

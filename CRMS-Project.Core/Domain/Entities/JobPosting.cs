@@ -27,8 +27,8 @@ namespace CRMS_Project.Core.Domain.Entities
         public string Description { get; set; }
         [Required]
         public DateTime PostedDate { get; set; }
-        public DateTime ApprovedDate { get; set; }
-        public DateTime RejectedDate { get; set; }
+        public DateTime? ApprovedDate { get; set; }
+        public DateTime? RejectedDate { get; set; }
         [Required]
         public DateTime Deadline { get; set; }
         [Required]

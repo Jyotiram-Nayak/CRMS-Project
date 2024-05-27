@@ -35,7 +35,7 @@ builder.Services.AddTransient<IJobRepository, JobRepository>();
 builder.Services.AddTransient<IJobApplicationRepository, JobApplicationRepository>();
 
 //configure services with SMTPConfiguration
-builder.Services.Configure<SMTPConfiguration>(builder.Configuration.GetSection("EmailSettings"));
+//builder.Services.Configure<SMTPConfiguration>(builder.Configuration.GetSection("EmailSettings"));
 
 //use automapper middleware to map between entity and DTO
 builder.Services.AddAutoMapper(typeof(Program));

@@ -217,10 +217,10 @@ namespace CRMS_Project.WebApi.Controllers
             }
             return Ok(new { success = true, message = "Dashboard load successfully.", data = result });
         }
-        [HttpPatch("contact-us")]
-        public async Task<IActionResult> SendMailContactUs(EmailMessage emailMessage)
+        [HttpPost("contact-us")]
+        public async Task<IActionResult> SendMailContactUs(ContactUsRequest contact)
         {
-            var result = await _authRepository.StudentDashboard();
+            var result = await _authRepository.SendContactusMail(contact);
             if (result == null)
             {
                 return BadRequest(new { success = false, message = "Faild to send mail." });

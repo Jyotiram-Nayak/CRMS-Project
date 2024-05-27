@@ -189,6 +189,8 @@ namespace CRMS_Project.Infrastructure.Repositories
         {
             try
             {
+                var user = await _userManager.FindByEmailAsync(studentRequest.Email);
+                if (user != null) return IdentityResult.Failed(new IdentityError { Description = "User already exist" });
                 ApplicationUser newUser = new ApplicationUser
                 {
                     Id = Guid.NewGuid(),

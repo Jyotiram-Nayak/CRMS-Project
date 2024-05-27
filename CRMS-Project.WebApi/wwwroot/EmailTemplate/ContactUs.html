@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Confirmation</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <h2 class="card-title">Email Confirmation</h2>
+                        <p class="card-text">Hello <strong>{{UserName}}</strong>,</p>
+                        <p class="card-text">Please click the button below to confirm your email:</p>
+                        <a href="{{Link}}" class="btn btn-primary">Confirm Email</a>
+                        <p class="card-text">{{Name}}</p>
+                        <p class="card-text">{{Email}}</p>
+                        <p class="card-text">{{Contact}}</p>
+                        <p class="card-text">{{Message}}</p>
+                        <p class="card-text">If you didn't request this, please ignore this email.</p>
+                        <p class="card-text">Thanks,<br /></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

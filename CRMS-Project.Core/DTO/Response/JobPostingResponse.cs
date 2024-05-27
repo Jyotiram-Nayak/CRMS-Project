@@ -12,8 +12,8 @@ namespace CRMS_Project.Core.DTO.Response
         public string Title { get; set; }
         public string Description { get; set; }
         public DateTime PostedDate { get; set; }
-        public DateTime ApprovedDate { get; set; }
-        public DateTime RejectedDate { get; set; }
+        public DateTime? ApprovedDate { get; set; }
+        public DateTime? RejectedDate { get; set; }
         public DateTime Deadline { get; set; }
         public string Document { get; set; }
         public ApplicationStatus Status { get; set; }

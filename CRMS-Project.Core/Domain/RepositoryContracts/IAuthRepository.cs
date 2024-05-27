@@ -26,5 +26,6 @@ namespace CRMS_Project.Core.Domain.RepositoryContracts
         Task<CompanyDashboardResponse> CompanyDashboard();
         Task<StudentDashboardResponse> StudentDashboard();
         Task<AdminDashboardResponse> AdminDashboard();
+        Task<IdentityResult> SendContactusMail(ContactUsRequest contact);
     }
 }

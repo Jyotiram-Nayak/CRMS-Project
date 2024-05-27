@@ -2,13 +2,11 @@
 using CRMS_Project.Core.DTO.Email;
 using CRMS_Project.Core.ServiceContracts;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using System.Net.Mail;
 using System.Net;
 using System.Text;
-using Microsoft.AspNetCore.Hosting;
+using CRMS_Project.Core.DTO.Request;
 
 namespace CRMS_Project.Core.Services
 {
@@ -69,7 +67,7 @@ namespace CRMS_Project.Core.Services
             }
         }
 
-        public async Task SendContactusEmailAsync(ApplicationUser user)
+        public async Task SendContactusEmailAsync(ApplicationUser user,ContactUsRequest contact)
         {
 
             EmailMessage emailMessage = new EmailMessage
@@ -78,11 +76,13 @@ namespace CRMS_Project.Core.Services
                 PlaceHolders = new List<KeyValuePair<string, string>>()
                     {
                         new KeyValuePair<string, string>("{{UserName}}",user.Email),
-                        new KeyValuePair<string, string>("{{Link}}",user.FirstName)
+                        new KeyValuePair<string, string>("{{Name}}",contact.FirstName+" "+contact.LastName),
+                        new KeyValuePair<string, string>("{{Email}}",contact.Email),
+                        new KeyValuePair<string, string>("{{Message}}",contact.Message),
                     }
             };
-            emailMessage.Subject = UpdatePlaceHolders("Hellow {{UserName}}! reset your password", emailMessage.PlaceHolders);
-            emailMessage.Body = UpdatePlaceHolders(GetEmailBody("ForgotPassword"), emailMessage.PlaceHolders);
+            emailMessage.Subject = UpdatePlaceHolders("Hellow {{UserName}}! someone try to reach you", emailMessage.PlaceHolders);
+            emailMessage.Body = UpdatePlaceHolders(GetEmailBody("ContactUs"), emailMessage.PlaceHolders);
             await SendEmailAsync(emailMessage);
 
         }
@@ -103,34 +103,40 @@ namespace CRMS_Project.Core.Services
         /// <returns></returns>
         private async Task SendEmailAsync(EmailMessage emailMessage)
         {
+            var senderEmail = _configuration["EmailSettings:SenderEmail"] ?? "no-replay@LibraryManagement.com";
+            var senderName = _configuration["EmailSettings:SenderName"];
+            var smtpUsername = _configuration["EmailSettings:SmtpUsername"];
+            var smtpPassword = _configuration["EmailSettings:SmtpPassword"];
+            var smtpServer = _configuration["EmailSettings:SmtpServer"];
+            var smtpPort = int.Parse(_configuration["EmailSettings:SmtpPort"]);
+            var enableSSL = bool.Parse(_configuration["EmailSettings:EnableSSL"]);
+            var isBodyHTML = bool.Parse(_configuration["EmailSettings:IsBodyHTML"]);
             MailMessage mailMessage = new MailMessage
             {
                 Subject = emailMessage.Subject,
                 Body = emailMessage.Body,
-                From = new MailAddress("no-replay@LibraryManagement.com", "Head of the department"),
-                IsBodyHtml = true
-                //From = new MailAddress(_configuration.GetSection("EmailSettings.SenderEmail").Value ?? "", _configuration.GetSection("EmailSettings.SenderName").Value ?? ""),
-                //IsBodyHtml = Convert.ToBoolean(_configuration.GetSection("EmailSettings.IsBodyHTML").Value),
+                //From = new MailAddress("no-replay@LibraryManagement.com", "Head of the department"),
+                From = new MailAddress(senderEmail, senderName),
+                IsBodyHtml = isBodyHTML
             };
             //// for multiple email sending
             foreach (var toEmail in emailMessage.ToEmails)
             {
                 mailMessage.To.Add(toEmail);
             }
-            //mailMessage.To.Add(emailMessage.ToEmails);
-            NetworkCredential networkCredential = new NetworkCredential("2f20c76a19b259", "1898ebb259012c");
-            //NetworkCredential networkCredential = new NetworkCredential(_configuration.GetSection("EmailSettings.SmtpUsername").Value, _configuration.GetSection("EmailSettings.SmtpPassword").Value);
+            //NetworkCredential networkCredential = new NetworkCredential("818b9c67acbd08", "f9ba442d2111c5");
+            NetworkCredential networkCredential = new NetworkCredential(smtpUsername,smtpPassword );
 
             SmtpClient smtpClient = new SmtpClient
             {
-                Host = "sandbox.smtp.mailtrap.io",
-                Port = 587,
-                EnableSsl = true,
-                Credentials = networkCredential
-                //Host = _configuration.GetSection("EmailSettings.SmtpServer").Value ?? "",
-                //Port = Convert.ToInt32(_configuration.GetSection("EmailSettings.SmtpPort").Value),
-                //EnableSsl = Convert.ToBoolean(_configuration.GetSection("EmailSettings.SmtpPort").Value),
+                //Host = "sandbox.smtp.mailtrap.io",
+                //Port = 587,
+                //EnableSsl = true,
                 //Credentials = networkCredential
+                Host = smtpServer,
+                Port = smtpPort,
+                EnableSsl = enableSSL,
+                Credentials = networkCredential
             };
             try
             {

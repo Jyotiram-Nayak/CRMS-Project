@@ -1,4 +1,5 @@
 ﻿using CRMS_Project.Core.Domain.Identity;
+using CRMS_Project.Core.DTO.Request;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,6 @@ namespace CRMS_Project.Core.ServiceContracts
     {
         Task SendEmailConfirmationAsync(ApplicationUser user);
         Task SendForgotEmailAsync(ApplicationUser user);
+        Task SendContactusEmailAsync(ApplicationUser user, ContactUsRequest contact);
     }
 }
