@@ -102,7 +102,7 @@ namespace CRMS_Project.Infrastructure.Repositories
                         case "course":
                             if (Enum.TryParse(filterQuery, out StudentCourse course))
                             {
-                                query = query.Where(student => student.Course == course);
+                                query = query.Where(application => application.Course == course);
                             }
                             break;
                         case "city":
@@ -110,6 +110,12 @@ namespace CRMS_Project.Infrastructure.Repositories
                             break;
                         case "state":
                             query = query.Where(application => application.State.Contains(filterQuery));
+                            break;
+                        case "isselected":
+                            if (Enum.TryParse(filterQuery, out SelectionStatus status))
+                            {
+                                query = query.Where(application => application.isSelected == status);
+                            }
                             break;
                         default:
                             break;

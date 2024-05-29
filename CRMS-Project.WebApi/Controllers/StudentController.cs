@@ -54,7 +54,8 @@ namespace CRMS_Project.WebApi.Controllers
             var result = await _studentRepository.UpdateStudentAsync(studentId, studentRequest);
             if (!result.Succeeded)
             {
-                return BadRequest(new { success = false, message = "Failed to update Student." + result.Errors.Select(e => e.Description) });
+                //return BadRequest(new { success = false, message = "Failed to update Student." + result.Errors.Select(e => e.Description) });
+                return BadRequest(new { success = false, message = "Failed to update Student." });
             };
             return Ok(new { success = true, message = "Student updated successfully...", data = result });
         }

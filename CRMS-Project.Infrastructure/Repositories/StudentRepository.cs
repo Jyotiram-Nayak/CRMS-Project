@@ -71,7 +71,8 @@ namespace CRMS_Project.Infrastructure.Repositories
                                 JoiningDate = student.JoiningDate,
                                 GraduationDate = student.GraduationDate,
                                 IsSelected = student.IsSelected,
-                                Image = user.Image
+                                Image = user.Image,
+                                UpdateOn = user.UpdateOn
                             };
                 if (!string.IsNullOrEmpty(parameters.FilterOn) && !string.IsNullOrEmpty(parameters.FilterQuery))
                 {

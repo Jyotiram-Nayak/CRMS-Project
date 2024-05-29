@@ -455,7 +455,6 @@ namespace CRMS_Project.Infrastructure.Repositories
             try
             {
                 var user =await _userManager.Users.Where(x => x.Role == UserRoles.Admin.ToLower()).FirstOrDefaultAsync();
-                //if (user == null) { return IdentityResult.Failed(new IdentityError { Description = "User not found" }); }
                 await _emailService.SendContactusEmailAsync(user,contact);
                 return IdentityResult.Success;
             }

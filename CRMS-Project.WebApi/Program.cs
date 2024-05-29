@@ -1,16 +1,13 @@
 using CRMS_Project.Core.Domain.Identity;
 using CRMS_Project.Core.Domain.RepositoryContracts;
-using CRMS_Project.Core.DTO.Email;
 using CRMS_Project.Core.ServiceContracts;
 using CRMS_Project.Core.Services;
 using CRMS_Project.Infrastructure.DbContext;
 using CRMS_Project.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using System.Security.Claims;
 using System.Text;
 var builder = WebApplication.CreateBuilder(args);
@@ -33,9 +30,6 @@ builder.Services.AddTransient<IStudentRepository, StudentRepository>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IJobRepository, JobRepository>();
 builder.Services.AddTransient<IJobApplicationRepository, JobApplicationRepository>();
-
-//configure services with SMTPConfiguration
-//builder.Services.Configure<SMTPConfiguration>(builder.Configuration.GetSection("EmailSettings"));
 
 //use automapper middleware to map between entity and DTO
 builder.Services.AddAutoMapper(typeof(Program));
